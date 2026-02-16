@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+
+# Testing
+__snapshots__/
+coverage/
+
+# Database
+.sequelizerc
+*.sqlite
+
+# Misc
+.DS_Store
+.env
+*.log

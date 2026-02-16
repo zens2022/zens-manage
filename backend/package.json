@@ -1,0 +1,30 @@
+{
+  "name": "zens-manage",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/app.js",
+  "type": "module",
+  "scripts": {
+    "test": "cross-env NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
+    "dev": "nodemon src/app.js",
+    "start": "node src/app.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@koa/cors": "^5.0.0",
+    "bcryptjs": "^3.0.3",
+    "cross-env": "^10.1.0",
+    "jest": "^30.2.0",
+    "jsonwebtoken": "^9.0.3",
+    "koa": "^3.1.1",
+    "koa-bodyparser": "^4.4.1",
+    "koa-router": "^14.0.0",
+    "koa-static": "^5.0.0",
+    "nodemon": "^3.1.11",
+    "sequelize": "^6.37.1",
+    "sqlite3": "^5.1.7",
+    "supertest": "^7.2.2"
+  }
+}

@@ -1,0 +1,16 @@
+services:
+  zens-manage:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - zens_data:/app/backend/data
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - JWT_SECRET=zens-manage-secret-change-me
+
+volumes:
+  zens_data:

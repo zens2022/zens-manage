@@ -1,0 +1,10 @@
+# 排除 Node.js 模組
+node_modules
+
+# 排除測試快照與覆蓋率報告
+__snapshots__/
+coverage/
+
+# 排除資料庫遷移記錄或本地緩存
+.sequelizerc
+*.sqlite

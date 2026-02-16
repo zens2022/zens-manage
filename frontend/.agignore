@@ -1,0 +1,29 @@
+# 1. 絕對必須排除的「Token 黑洞」
+node_modules/
+.vite/
+.vite-temp/
+
+# 2. 排除建置產物（產出的檔案 AI 讀不懂，也沒必要讀）
+dist/
+build/
+out/
+.next/
+
+# 3. 排除各類快取與暫存檔
+.eslintcache
+.stylelintcache
+*.local
+.cache/
+
+# 4. 排除測試相關（除非你正在叫 AI 寫測試）
+coverage/
+__snapshots__/
+
+# 5. 排除大型媒體與字體資源（AI 無法理解二進位檔案）
+public/assets/
+*.woff
+*.woff2
+*.ttf
+*.png
+*.jpg
+*.svg
