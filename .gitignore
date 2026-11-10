@@ -28,11 +28,15 @@ yarn-error.log*
 pnpm-debug.log*
 
 # Editor
-.vscode/*
-!.vscode/extensions.json
-.idea
+.vscode/
+.idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# Backup & Local Database
+backup_data/
+*.sqlite
+*.sqlite3
