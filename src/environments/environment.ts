@@ -1,6 +1,6 @@
 export const environment = {
   production: false,
-  googleClientId: 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com',
+  googleClientId: '789071912801-4gi9l1b1uuq6e12l3i48in7s0ap73gjg.apps.googleusercontent.com',
   driveFileName: 'zens_assets_v1.json',
   syncDebounceMs: 3500
 };
