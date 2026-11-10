@@ -95,14 +95,16 @@ import { AssetDialogComponent } from './components/asset-dialog/asset-dialog.com
 
               <!-- 操作欄位 -->
               <ng-container matColumnDef="actions">
-                <th mat-header-cell *matHeaderCellDef style="width: 120px; text-align: right;">操作</th>
-                <td mat-cell *matCellDef="let element" style="text-align: right;">
-                  <button mat-icon-button color="primary" (click)="openEditDialog(element); $event.stopPropagation()" title="編輯">
-                    <mat-icon>edit</mat-icon>
-                  </button>
-                  <button mat-icon-button color="warn" (click)="confirmDelete(element); $event.stopPropagation()" title="刪除">
-                    <mat-icon>delete</mat-icon>
-                  </button>
+                <th mat-header-cell *matHeaderCellDef class="actions-header">操作</th>
+                <td mat-cell *matCellDef="let element" class="actions-cell">
+                  <div class="actions-container">
+                    <button mat-icon-button color="primary" (click)="openEditDialog(element); $event.stopPropagation()" title="編輯">
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                    <button mat-icon-button color="warn" (click)="confirmDelete(element); $event.stopPropagation()" title="刪除">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
                 </td>
               </ng-container>
 
@@ -208,12 +210,48 @@ import { AssetDialogComponent } from './components/asset-dialog/asset-dialog.com
     }
     .asset-table {
       width: 100%;
+      table-layout: auto;
+    }
+    .mat-mdc-header-row {
+      height: 46px;
     }
     .element-row {
-      transition: background-color 0.25s ease;
+      height: 48px;
+      min-height: 48px;
+      transition: background-color 0.2s ease;
     }
     .element-row:hover {
       background-color: #f8f9fa;
+    }
+    .mat-mdc-cell, .mat-mdc-header-cell {
+      padding: 0 12px;
+      vertical-align: middle;
+    }
+    .actions-header, .actions-cell {
+      width: 120px;
+      min-width: 120px;
+      text-align: right;
+      white-space: nowrap;
+    }
+    .actions-container {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 2px;
+      white-space: nowrap;
+
+      button {
+        width: 36px;
+        height: 36px;
+        padding: 6px;
+
+        mat-icon {
+          font-size: 20px;
+          width: 20px;
+          height: 20px;
+          line-height: 20px;
+        }
+      }
     }
     .highlight-flash {
       background-color: #e8eaf6 !important;
