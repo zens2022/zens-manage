@@ -1,5 +1,8 @@
-**/node_modules
+node_modules
+dist
 .git
+.vscode
 .gemini
-frontend/dist
-backend/database.sqlite
+backup_data
+*.sqlite
+*.sqlite3

@@ -11,7 +11,7 @@ __snapshots__/
 dist/
 build/
 out/
-.next/
+.angular/
 
 # Misc
 .DS_Store

@@ -1,348 +1,136 @@
-# Zens Manage - 資產管理系統
+# Zens Manage - 個人雲端資產管理系統 (Serverless Edition)
 
-一個全端資產管理應用程式，使用 **Node.js (Koa)** 和 **React** 構建。
-
-## 📋 目錄
-
-- [專案概述](#專案概述)
-- [功能特色](#功能特色)
-- [技術棧](#技術棧)
-- [專案結構](#專案結構)
-- [環境需求](#環境需求)
-- [快速開始](#快速開始)
-- [測試](#測試)
-- [API 文檔](#api-文檔)
-- [部署](#部署)
-- [常見問題](#常見問題)
-
-## 專案概述
-
-Zens Manage 是一個資產管理系統，允許用戶追蹤和管理每月資產記錄。系統支援用戶管理、資產記錄的 CRUD 操作，以及資料視覺化。
-
-### 主要功能
-
-- 👤 **用戶管理**：管理員可以創建、編輯、啟用/停用和刪除用戶
-- 💰 **資產管理**：用戶可以記錄每月資產明細
-- 📊 **數據視覺化**：使用折線圖展示資產趨勢
-- 🔐 **權限控制**：基於 JWT 的身份驗證，區分管理員和普通用戶權限
-- 🔍 **數據過濾**：管理員可查看所有用戶資料，普通用戶僅能查看自己的資料
-
-## 功能特色
-
-### 用戶管理
-- 創建新用戶（管理員權限）
-- 編輯用戶資訊
-- 啟用/停用用戶狀態
-- 刪除用戶（需先停用）
-- 用戶搜尋功能
-
-### 資產管理
-- 新增每月資產記錄
-- 編輯現有資產記錄
-- 刪除資產記錄
-- 自動計算資產小計
-- 按用戶過濾資產資料
-- 分頁顯示資產列表
-- 資產趨勢圖表展示
-
-## 技術棧
-
-### Backend
-- **框架**: Koa.js
-- **資料庫**: SQLite + Sequelize ORM
-- **認證**: JWT (JSON Web Tokens)
-- **密碼加密**: bcryptjs
-- **測試**: Jest + Supertest
-- **開發工具**: Nodemon
-
-### Frontend
-- **框架**: React 19
-- **建置工具**: Vite
-- **UI 框架**: Material-UI (MUI)
-- **圖表**: Recharts
-- **路由**: React Router v7
-- **測試**: Jest + React Testing Library
-- **日期處理**: Moment.js
-
-## 專案結構
-
-```
-zens-manage/
-├── backend/                 # 後端 API 服務
-│   ├── src/
-│   │   ├── config/         # 配置文件（資料庫等）
-│   │   ├── controllers/    # 控制器層
-│   │   ├── middleware/     # 中間件（認證、錯誤處理）
-│   │   ├── models/         # Sequelize 模型
-│   │   ├── repositories/   # 資料存取層
-│   │   ├── routes/         # 路由定義
-│   │   ├── services/       # 業務邏輯層
-│   │   └── app.js          # 應用入口
-│   ├── tests/              # 測試文件
-│   │   ├── user.test.js    # 用戶 API 測試
-│   │   └── asset.test.js   # 資產 API 測試
-│   ├── data/               # SQLite 資料庫文件
-│   └── package.json
-├── frontend/               # 前端應用
-│   ├── src/
-│   │   ├── components/     # 可重用組件
-│   │   ├── pages/          # 頁面組件
-│   │   ├── services/       # API 服務
-│   │   ├── tests/          # 測試文件
-│   │   ├── utils/          # 工具函數
-│   │   ├── App.jsx         # 主應用組件
-│   │   └── main.jsx        # 應用入口
-│   └── package.json
-└── README.md               # 本文件
-```
-
-## 環境需求
-
-- **Node.js**: v18.0.0 或更高版本
-- **npm**: v9.0.0 或更高版本
-- **作業系統**: Windows / macOS / Linux
-
-## 快速開始
-
-### 1. 克隆專案
-
-```bash
-git clone <repository-url>
-cd zens-manage
-```
-
-### 2. 後端設置
-
-```bash
-cd backend
-npm install
-npm run dev
-```
-
-後端服務將在 `http://localhost:3000` 啟動。
-
-**預設管理員帳號**（首次啟動自動創建）：
-- 用戶名：`admin`
-- 密碼：`admin123`
-
-### 3. 前端設置
-
-開啟新的終端視窗：
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-前端應用將在 `http://localhost:5173` 啟動。
-
-### 4. 訪問應用
-
-在瀏覽器中打開 `http://localhost:5173`，使用預設管理員帳號登入。
-
-## 測試
-
-### 後端測試
-
-```bash
-cd backend
-npm test
-```
-
-測試覆蓋：
-- ✅ 用戶 API（登入、創建、更新、狀態變更、刪除）
-- ✅ 資產 API（創建、列表、更新、刪除）
-- ✅ 認證中間件
-- ✅ 資料庫操作
-
-### 前端測試
-
-```bash
-cd frontend
-npm test
-```
-
-測試覆蓋：
-- ✅ Login 組件渲染
-- ✅ AssetPage 數據加載
-- ✅ UserManagement 基本功能
-
-### 測試覆蓋率
-
-```bash
-# 後端
-cd backend
-npm test -- --coverage
-
-# 前端
-cd frontend
-npm test -- --coverage
-```
-
-## API 文檔
-
-### 認證
-
-所有 API（除了登入）都需要在 Header 中包含 JWT Token：
-
-```
-Authorization: Bearer <token>
-```
-
-### 用戶 API
-
-| 方法 | 端點 | 描述 | 權限 |
-|------|------|------|------|
-| POST | `/api/user/login` | 用戶登入 | 公開 |
-| GET | `/api/user/list` | 獲取用戶列表 | 需認證 |
-| POST | `/api/user/create` | 創建新用戶 | 需認證 |
-| POST | `/api/user/update` | 更新用戶資訊 | 需認證 |
-| POST | `/api/user/change-status` | 變更用戶狀態 | 需認證 |
-| POST | `/api/user/delete` | 刪除用戶 | 需認證 |
-
-### 資產 API
-
-| 方法 | 端點 | 描述 | 權限 |
-|------|------|------|------|
-| GET | `/api/asset/list` | 獲取資產列表 | 需認證 |
-| POST | `/api/asset/create` | 創建資產記錄 | 需認證 |
-| PUT | `/api/asset/:id` | 更新資產記錄 | 需認證 |
-| DELETE | `/api/asset/:id` | 刪除資產記錄 | 需認證 |
-| GET | `/api/asset/last-items` | 獲取最後一次的資產項目 | 需認證 |
-
-### API 請求範例
-
-#### 登入
-
-```bash
-curl -X POST http://localhost:3000/api/user/login \
-  -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"admin123"}'
-```
-
-#### 創建資產記錄
-
-```bash
-curl -X POST http://localhost:3000/api/asset/create \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer <your-token>" \
-  -d '{
-    "date": "2025-01-01",
-    "items": [
-      {"name": "股票", "value": 100000},
-      {"name": "現金", "value": 50000}
-    ]
-  }'
-```
-
-## 部署
-
-### 生產環境建置
-
-#### 後端
-
-```bash
-cd backend
-npm start
-```
-
-#### 前端
-
-```bash
-cd frontend
-npm run build
-```
-
-建置後的文件將在 `frontend/dist` 目錄中。
-
-### 環境變數
-
-創建 `.env` 文件（可選）：
-
-```env
-# Backend
-PORT=3000
-JWT_SECRET=your-secret-key
-NODE_ENV=production
-
-# Frontend
-VITE_API_URL=http://localhost:3000
-```
-
-### Docker 部署（可選）
-
-如果專案包含 Docker 配置：
-
-```bash
-docker-compose up -d
-```
-
-## 常見問題
-
-### Q: 首次啟動後端時資料庫在哪裡？
-
-A: SQLite 資料庫文件位於 `backend/data/database.sqlite`。測試環境使用記憶體資料庫。
-
-### Q: 如何重置資料庫？
-
-A: 刪除 `backend/data/database.sqlite` 文件，重新啟動後端服務即可。
-
-### Q: 忘記管理員密碼怎麼辦？
-
-A: 刪除資料庫文件重新啟動，或直接在資料庫中更新密碼（需要 bcrypt 加密）。
-
-### Q: 測試失敗怎麼辦？
-
-A: 
-1. 確保 Node.js 版本 >= 18
-2. 刪除 `node_modules` 和 `package-lock.json`，重新安裝
-3. 確保沒有其他服務佔用 3000 或 5173 端口
-
-### Q: 前端無法連接後端？
-
-A: 
-1. 確認後端服務已啟動在 `http://localhost:3000`
-2. 檢查瀏覽器控制台的 CORS 錯誤
-3. 確認 API 請求路徑正確
-
-### Q: 如何添加新用戶？
-
-A: 使用管理員帳號登入後，在用戶管理頁面點擊「New User」按鈕。
-
-## 開發指南
-
-### 代碼風格
-
-- 使用 ES6+ 語法
-- 使用 ESLint 進行代碼檢查
-- 遵循 Airbnb JavaScript Style Guide
-
-### Git 工作流程
-
-1. 從 `main` 分支創建功能分支
-2. 完成功能開發並通過測試
-3. 提交 Pull Request
-4. Code Review 後合併
-
-### 貢獻指南
-
-歡迎提交 Issue 和 Pull Request！
-
-1. Fork 本專案
-2. 創建功能分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交變更 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 開啟 Pull Request
-
-## 授權
-
-本專案採用 ISC 授權。
-
-## 聯絡方式
-
-如有問題或建議，請提交 Issue 或聯繫專案維護者。
+一個現代化、高隱私、零後端 (Serverless / No-Backend) 的個人資產追蹤與管理系統。使用 **Angular 20**、**Angular Material** 構建，透過 **Google Identity Services (OAuth 2.0)** 登入，並以使用者的個人 **Google Drive** 作為永久雲端儲存中心，支援本機 **LocalStorage** 離線操作與自動防抖背景同步。
 
 ---
 
-**最後更新**: 2026-02-15
+## 📋 目錄
+- [系統特色](#系統特色)
+- [技術架構](#技術架構)
+- [核心功能](#核心功能)
+- [快速開始](#快速開始)
+- [Google Cloud Console 設定指南](#google-cloud-console-設定指南)
+- [舊資料轉移與備份](#舊資料轉移與備份)
+- [Docker 容器化部署](#docker-容器化部署)
+- [專案結構](#專案結構)
+
+---
+
+## 🌟 系統特色
+* 🔒 **極致隱私保護 (Zero-Knowledge)**：純客戶端運作，伺服器不保存任何使用者憑證、密碼或資產數據。
+* ⚡ **本地優先 (Local-First)**：讀寫操作優先於瀏覽器端 LocalStorage 執行，介面反應達到毫秒級速度。
+* ☁️ **Google Drive 雲端同步**：個人資料儲存於私密 Google Drive（檔名 `zens_assets_v1.json`），僅請求 `drive.file` 最低權限。
+* ⏱️ **背景防抖自動同步 (Debounce Save)**：編輯後 3.5 秒自動背景覆寫上傳，無干擾且節省網路頻寬。
+* 📡 **離線可用性 (Offline Capability)**：自動偵測網路狀態，斷網時操作存於本機，恢復連線後自動上傳。
+* 🐳 **輕量化容器 (Nginx Alpine)**：打包為純靜態 Nginx 映像檔，體積小、啟動快。
+
+---
+
+## 🛠️ 技術架構
+* **前端框架**: Angular 20 (TypeScript, RxJS, Signals)
+* **UI 元件庫**: Angular Material
+* **身分驗證**: Google Identity Services (GIS SDK - OAuth 2.0 Token Client)
+* **雲端儲存**: Google Drive API v3 (REST)
+* **本地儲存**: Web Storage API (LocalStorage)
+* **圖表庫**: ECharts (資產趨勢折線圖)
+* **容器服務**: Docker + Nginx (Alpine)
+
+---
+
+## 💡 核心功能
+1. **資產記錄清單**:
+   * 按日期降序排列歷史記錄。
+   * **明細展開/收合**: 點擊列可即時展開各項目名稱與金額。
+   * 分頁器切換每頁顯示筆數。
+2. **新增/編輯資產彈窗**:
+   * 日期選擇與項目即時增刪。
+   * **自動帶入上次項目 (Load Last Items)**: 新增資產時可一鍵帶入上一次記錄的資產項目清單，省去重複輸入。
+   * 即時計算小計總額 (Total)。
+3. **資產趨勢分析圖**:
+   * 自動以 ECharts 繪製資產總額曲線圖，支援千分位數值格式化與流暢響應式縮放。
+4. **雲端狀態指示燈與備份**:
+   * 即時顯示同步狀態 (`已上雲`、`待同步`、`同步中`、`離線模式`、`同步異常`)。
+   * 提供「立即強制同步」按鈕。
+   * 支援手動「匯出 JSON」與「匯入 JSON 備份檔」。
+
+---
+
+## 🚀 快速開始
+
+### 1. 本地開發環境需求
+* **Node.js**: v18.0.0 以上 (建議 v20 或 v24)
+* **npm**: v9.0.0 以上
+* **Angular CLI**: v20 / v21
+
+### 2. 安裝與啟動
+```bash
+# 安裝依賴
+npm install
+
+# 啟動開發伺服器
+npm start
+```
+開啟瀏覽器訪問 `http://localhost:4200`。
+
+---
+
+## ⚙️ Google Cloud Console 設定指南
+
+要啟用 Google Drive 雲端同步功能，需至 [Google Cloud Console](https://console.cloud.google.com/) 建立 OAuth 用戶端：
+1. 建立或選擇 GCP 專案。
+2. 至 **API 和服務** > **已啟用的 API 和服務**，搜尋並啟用 **Google Drive API**。
+3. 設定 **OAuth 同意畫面**：
+   * User Type: 外部 (External)
+   * 授權範圍 (Scopes)：新增 `https://www.googleapis.com/auth/drive.file`、`.../auth/userinfo.profile`、`.../auth/userinfo.email`。
+   * 測試使用者：新增您的 Google 帳號。
+4. 至 **憑證** (Credentials) > **建立憑證** > **OAuth 2.0 用戶端 ID**：
+   * 應用程式類型：**網頁應用程式 (Web application)**
+   * **已授權的 JavaScript 來源**：加入 `http://localhost:4200` 及正式上線網址（例如 `http://localhost:3000`）。
+5. 複製生成的 **Client ID**，填入 `src/environments/environment.ts` 與 `src/environments/environment.prod.ts` 中的 `googleClientId`。
+
+---
+
+## 💾 舊資料轉移與備份
+
+原系統中的 SQLite 資料庫已安全備份並轉存至 `backup_data/exported_assets.json`。
+
+### 如何匯入歷史資料：
+1. 開啟本系統頁面並登入 Google。
+2. 點擊右上角「資料備份與匯入」圖示（或點擊首頁引導按鈕）。
+3. 選擇「匯入 JSON 備份檔」，選取您的 `exported_assets.json`。
+4. 系統將即時載入歷史記錄並自動排程備份至您的 Google Drive！
+
+---
+
+## 🐳 Docker 容器化部署
+
+本專案提供 Multi-stage Dockerfile 與 Nginx 靜態託管設定。
+
+### 本地 Docker 啟動
+```bash
+docker-compose -f docker/docker-compose.yml up --build -d
+```
+啟動後即可透過 `http://localhost:3000` 存取應用程式。
+
+---
+
+## 📁 專案結構
+```
+zens-manage/
+├── docker/                     # Dockerfile, nginx.conf, docker-compose.yml
+├── src/
+│   ├── app/
+│   │   ├── core/               # 核心服務 (Auth, LocalStorage, DriveStorage, SyncManager, Network)
+│   │   ├── features/           # 業務功能 (AssetPage, AssetChart, AssetDialog)
+│   │   ├── models/             # 資料模型 (AssetRecord, AssetItem, ZensAppData)
+│   │   ├── shared/             # 通用元件 (Header, SyncIndicator)
+│   │   ├── app.ts / app.html   # 主版面元件
+│   │   └── app.routes.ts       # 路由配置
+│   ├── environments/           # 環境變數 (Google Client ID 設定)
+│   ├── index.html              # 主頁面 (載入 GIS SDK、字型)
+│   └── styles.scss             # Angular Material 主題與全域樣式
+├── angular.json                # Angular CLI 設定
+├── package.json
+├── migration-project-spec.md   # 遷移規格書
+└── README.md
+```
