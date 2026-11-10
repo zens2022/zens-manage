@@ -81,12 +81,14 @@ import { LocalStorageService } from '../../../core/storage/local-storage.service
       <!-- Google 使用者帳號區 -->
       @if (authService.isLoggedIn() && authService.currentUser(); as user) {
         <button mat-button [matMenuTriggerFor]="userMenu" class="user-btn">
-          @if (user.picture) {
-            <img [src]="user.picture" alt="Avatar" class="user-avatar">
-          } @else {
-            <mat-icon>account_circle</mat-icon>
-          }
-          <span class="user-name">{{ user.name }}</span>
+          <div class="user-btn-content">
+            @if (user.picture) {
+              <img [src]="user.picture" alt="Avatar" class="user-avatar">
+            } @else {
+              <mat-icon class="user-icon">account_circle</mat-icon>
+            }
+            <span class="user-name">{{ user.name }}</span>
+          </div>
         </button>
         <mat-menu #userMenu="matMenu">
           <button mat-menu-item disabled>
@@ -151,22 +153,58 @@ import { LocalStorageService } from '../../../core/storage/local-storage.service
       display: inline-block;
     }
     .user-btn {
+      margin-left: 8px;
+      height: 40px;
+      padding: 0 12px !important;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.15);
+      transition: background-color 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.25);
+      }
+
+      ::ng-deep .mdc-button__label {
+        display: flex !important;
+        align-items: center !important;
+        height: 100%;
+      }
+    }
+    .user-btn-content {
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-left: 8px;
+      height: 100%;
     }
     .user-avatar {
-      width: 28px;
-      height: 28px;
+      width: 26px;
+      height: 26px;
       border-radius: 50%;
       object-fit: cover;
+      display: block;
+      border: 1px solid rgba(255, 255, 255, 0.6);
+    }
+    .user-icon {
+      font-size: 26px;
+      width: 26px;
+      height: 26px;
+      line-height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .user-name {
-      max-width: 120px;
+      font-size: 14px;
+      font-weight: 500;
+      max-width: 130px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      line-height: 1;
+      display: inline-block;
     }
     .login-btn {
       margin-left: 8px;

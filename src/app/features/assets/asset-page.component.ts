@@ -59,8 +59,8 @@ import { AssetDialogComponent } from './components/asset-dialog/asset-dialog.com
           </mat-card-content>
         </mat-card>
       } @else {
-        <!-- 資產趨勢圖表 -->
-        <app-asset-chart [data]="allAssets()"></app-asset-chart>
+        <!-- 資產趨勢圖表 (支援點擊跳轉) -->
+        <app-asset-chart [data]="allAssets()" (pointClick)="onChartPointClick($event)"></app-asset-chart>
 
         <!-- 資產表格卡片 -->
         <mat-card class="table-card">
@@ -97,10 +97,10 @@ import { AssetDialogComponent } from './components/asset-dialog/asset-dialog.com
               <ng-container matColumnDef="actions">
                 <th mat-header-cell *matHeaderCellDef style="width: 120px; text-align: right;">操作</th>
                 <td mat-cell *matCellDef="let element" style="text-align: right;">
-                  <button mat-icon-button color="primary" (click)="openEditDialog(element)" title="編輯">
+                  <button mat-icon-button color="primary" (click)="openEditDialog(element); $event.stopPropagation()" title="編輯">
                     <mat-icon>edit</mat-icon>
                   </button>
-                  <button mat-icon-button color="warn" (click)="confirmDelete(element)" title="刪除">
+                  <button mat-icon-button color="warn" (click)="confirmDelete(element); $event.stopPropagation()" title="刪除">
                     <mat-icon>delete</mat-icon>
                   </button>
                 </td>
@@ -111,7 +111,7 @@ import { AssetDialogComponent } from './components/asset-dialog/asset-dialog.com
                 <td mat-cell *matCellDef="let element" [attr.colspan]="displayedColumns.length">
                   <div class="detail-wrapper" [class.collapsed]="!isExpanded(element)">
                     <div class="detail-box">
-                      <h4 class="detail-title">資產明細清單</h4>
+                      <h4 class="detail-title">資產明細清單 ({{ element.date }})</h4>
                       <table class="detail-table">
                         <thead>
                           <tr>
@@ -135,7 +135,9 @@ import { AssetDialogComponent } from './components/asset-dialog/asset-dialog.com
 
               <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
               <tr mat-row *matRowDef="let element; columns: displayedColumns;"
+                  [attr.id]="'asset-row-' + element.id"
                   class="element-row cursor-pointer"
+                  [class.highlight-flash]="highlightedId === element.id"
                   (click)="toggleExpand(element)">
               </tr>
               <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"></tr>
@@ -145,6 +147,7 @@ import { AssetDialogComponent } from './components/asset-dialog/asset-dialog.com
           <mat-paginator
             [length]="allAssets().length"
             [pageSize]="pageSize"
+            [pageIndex]="pageIndex"
             [pageSizeOptions]="[5, 10, 25, 50]"
             (page)="onPageChange($event)">
           </mat-paginator>
@@ -206,8 +209,20 @@ import { AssetDialogComponent } from './components/asset-dialog/asset-dialog.com
     .asset-table {
       width: 100%;
     }
+    .element-row {
+      transition: background-color 0.25s ease;
+    }
     .element-row:hover {
       background-color: #f8f9fa;
+    }
+    .highlight-flash {
+      background-color: #e8eaf6 !important;
+      animation: flashBg 2s ease-out;
+    }
+    @keyframes flashBg {
+      0% { background-color: #c5cae9; }
+      50% { background-color: #e8eaf6; }
+      100% { background-color: transparent; }
     }
     .font-medium {
       font-weight: 500;
@@ -270,6 +285,7 @@ export class AssetPageComponent implements OnInit {
 
   displayedColumns = ['expand', 'date', 'total', 'actions'];
   expandedAssetIds = new Set<string>();
+  highlightedId: string | null = null;
 
   pageIndex = 0;
   pageSize = 10;
@@ -306,6 +322,39 @@ export class AssetPageComponent implements OnInit {
     } else {
       this.expandedAssetIds.add(row.id);
     }
+  }
+
+  /**
+   * 當使用者點擊 Trend 折線圖的資料點時
+   */
+  onChartPointClick(record: AssetRecord): void {
+    const list = this.allAssets();
+    const index = list.findIndex(a => a.id === record.id);
+    if (index === -1) return;
+
+    // 計算該筆記錄在哪一頁
+    const targetPage = Math.floor(index / this.pageSize);
+    if (this.pageIndex !== targetPage) {
+      this.pageIndex = targetPage;
+      this.updatePagedAssets();
+    }
+
+    // 自動展開該列
+    this.expandedAssetIds.add(record.id);
+
+    // 平滑滾動至該列並給予高亮動畫
+    setTimeout(() => {
+      const el = document.getElementById('asset-row-' + record.id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        this.highlightedId = record.id;
+        setTimeout(() => {
+          this.highlightedId = null;
+        }, 2500);
+      }
+    }, 120);
+
+    this.snackBar.open(`已為您跳轉並展開 ${record.date} 之記錄明細`, '好', { duration: 2500 });
   }
 
   openCreateDialog(): void {
