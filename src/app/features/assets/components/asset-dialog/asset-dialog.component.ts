@@ -185,17 +185,53 @@ export interface AssetDialogData {
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
     .quick-btn {
-      height: 34px;
-      line-height: 34px;
+      height: 32px;
+      line-height: 32px;
       font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        margin-right: 2px;
+      }
     }
     .close-btn {
-      width: 34px;
-      height: 34px;
-      color: #777;
+      width: 32px !important;
+      height: 32px !important;
+      min-width: 32px !important;
+      padding: 0 !important;
+      color: #64748b;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      border-radius: 50%;
+      transition: background-color 0.2s, color 0.2s;
+
+      &:hover {
+        background-color: #f1f5f9;
+        color: #0f172a;
+      }
+
+      ::ng-deep .mat-mdc-button-touch-target {
+        display: none !important;
+      }
+
+      mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        line-height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
     }
 
     /* 控制列 */
