@@ -153,6 +153,7 @@ export interface AssetDialogData {
       display: flex;
       flex-direction: column;
       box-sizing: border-box;
+      overflow: hidden;
     }
 
     /* 頂部 Header */
@@ -233,7 +234,7 @@ export interface AssetDialogData {
 
       &:focus {
         border-color: #3f51b5;
-        box-shadow: 0 0 0 2px rgba(63, 81, 181, 0.15);
+        box-shadow: inset 0 0 0 1px #3f51b5;
       }
     }
     .control-spacer {
@@ -270,14 +271,19 @@ export interface AssetDialogData {
     .table-container {
       max-height: 52vh;
       overflow-y: auto;
+      overflow-x: hidden; /* 徹底杜絕水平捲軸引發的抖動 */
+      scrollbar-gutter: stable; /* 預留捲軸軌道，避免捲軸閃現導致寬度變化 */
       border: 1px solid #e2e8f0;
       border-radius: 8px;
       background: #fff;
+      box-sizing: border-box;
+      position: relative;
     }
     .compact-table {
       width: 100%;
       border-collapse: collapse;
       table-layout: fixed;
+      box-sizing: border-box;
     }
     .compact-table thead {
       position: sticky;
@@ -286,17 +292,20 @@ export interface AssetDialogData {
       z-index: 2;
     }
     .compact-table th {
-      padding: 7px 10px;
+      padding: 7px 8px;
       font-size: 12.5px;
       font-weight: 600;
       color: #475569;
       border-bottom: 1px solid #cbd5e1;
       text-align: left;
+      box-sizing: border-box;
+      overflow: hidden;
+      white-space: nowrap;
     }
     .th-index { width: 38px; text-align: center !important; }
-    .th-name { width: 50%; }
-    .th-value { width: 38%; }
-    .th-action { width: 44px; text-align: center !important; }
+    .th-name { width: calc(60% - 42px); }
+    .th-value { width: calc(40% - 42px); }
+    .th-action { width: 46px; text-align: center !important; }
 
     .item-row {
       height: 40px;
@@ -310,22 +319,27 @@ export interface AssetDialogData {
     .compact-table td {
       padding: 3px 6px;
       vertical-align: middle;
+      box-sizing: border-box;
+      overflow: hidden;
     }
     .td-index {
       text-align: center;
       font-size: 12px;
       color: #94a3b8;
       font-weight: 500;
+      white-space: nowrap;
     }
     .td-action {
       text-align: center;
+      padding: 3px 2px;
+      white-space: nowrap;
     }
 
-    /* 緊湊輸入框 */
+    /* 緊湊輸入框 (使用 inset 陰影，絕不溢出觸發捲軸) */
     .compact-input {
       width: 100%;
       height: 32px;
-      padding: 4px 10px;
+      padding: 4px 8px;
       border: 1px solid #cbd5e1;
       border-radius: 5px;
       font-size: 13.5px;
@@ -334,11 +348,14 @@ export interface AssetDialogData {
       box-sizing: border-box;
       outline: none;
       background-color: #fff;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      transition: border-color 0.15s, box-shadow 0.15s;
 
+      &:hover {
+        border-color: #94a3b8;
+      }
       &:focus {
         border-color: #3f51b5;
-        box-shadow: 0 0 0 2px rgba(63, 81, 181, 0.15);
+        box-shadow: inset 0 0 0 1px #3f51b5; /* 使用內陰影，完全不產生外部尺寸擴散 */
       }
       &::placeholder {
         color: #94a3b8;
@@ -350,10 +367,12 @@ export interface AssetDialogData {
       position: relative;
       display: flex;
       align-items: center;
+      width: 100%;
+      box-sizing: border-box;
     }
     .currency-prefix {
       position: absolute;
-      left: 9px;
+      left: 8px;
       font-size: 12px;
       font-weight: 600;
       color: #64748b;
@@ -366,16 +385,30 @@ export interface AssetDialogData {
       color: #0f172a;
     }
 
+    /* 消除 MDC 按鈕預設 48px touch-target 與 ripple 溢出 */
     .delete-btn {
-      width: 30px;
-      height: 30px;
-      line-height: 30px;
-      padding: 0;
+      width: 28px !important;
+      height: 28px !important;
+      min-width: 28px !important;
+      line-height: 28px !important;
+      padding: 0 !important;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+
+      ::ng-deep .mat-mdc-button-touch-target {
+        display: none !important;
+      }
+      ::ng-deep .mat-mdc-focus-indicator {
+        display: none !important;
+      }
 
       mat-icon {
-        font-size: 19px;
-        width: 19px;
-        height: 19px;
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
       }
     }
 
