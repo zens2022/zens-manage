@@ -3,10 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
-import { MatTableModule } from '@angular/material/table';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { AssetItem, AssetRecord } from '../../../../models/asset.model';
 
 export interface AssetDialogData {
@@ -22,63 +20,105 @@ export interface AssetDialogData {
     FormsModule,
     MatDialogModule,
     MatButtonModule,
-    MatFormFieldModule,
-    MatInputModule,
     MatIconModule,
-    MatTableModule
+    MatTooltipModule
   ],
   template: `
-    <h2 mat-dialog-title>
-      {{ isEdit ? '編輯資產記錄' : '新增資產記錄' }}
-    </h2>
+    <div class="dialog-wrapper">
+      <!-- 頂部標題與快速工具列 -->
+      <div class="dialog-header">
+        <div class="header-left">
+          <mat-icon class="header-icon">{{ isEdit ? 'edit_note' : 'post_add' }}</mat-icon>
+          <h2 class="dialog-title">{{ isEdit ? '編輯資產記錄' : '新增資產記錄' }}</h2>
+        </div>
 
-    <mat-dialog-content class="dialog-content">
-      <div class="header-inputs">
-        <mat-form-field appearance="outline" class="date-field">
-          <mat-label>記錄日期</mat-label>
-          <input matInput type="date" [(ngModel)]="date" required>
-        </mat-form-field>
-
-        @if (!isEdit && data.lastItems && data.lastItems.length > 0) {
-          <button mat-stroked-button color="primary" type="button" (click)="loadLastItems()" class="load-last-btn">
-            <mat-icon>history</mat-icon>
-            帶入上次項目 ({{ data.lastItems.length }}項)
+        <div class="header-actions">
+          @if (!isEdit && data.lastItems && data.lastItems.length > 0) {
+            <button mat-stroked-button color="primary" type="button" (click)="loadLastItems()" class="quick-btn">
+              <mat-icon>history</mat-icon>
+              帶入上次項目 ({{ data.lastItems.length }}項)
+            </button>
+          }
+          <button mat-icon-button mat-dialog-close class="close-btn" title="關閉">
+            <mat-icon>close</mat-icon>
           </button>
-        }
+        </div>
       </div>
 
-      <div class="items-header">
-        <h3>資產明細 (總計：NT$ {{ calculateTotal().toLocaleString() }})</h3>
-        <button mat-mini-fab color="primary" (click)="addItem()" title="新增明細項目">
+      <!-- 控制列：記錄日期與總計徽章 -->
+      <div class="control-bar">
+        <div class="date-control">
+          <label for="record-date" class="control-label">記錄日期</label>
+          <input
+            id="record-date"
+            type="date"
+            class="custom-date-input"
+            [(ngModel)]="date"
+            required
+          />
+        </div>
+
+        <div class="control-spacer"></div>
+
+        <div class="total-badge">
+          <span class="total-label">資產總計</span>
+          <span class="total-value">NT$ {{ calculateTotal().toLocaleString() }}</span>
+        </div>
+
+        <button mat-flat-button color="primary" type="button" (click)="addItem()" class="add-item-btn">
           <mat-icon>add</mat-icon>
+          新增項目
         </button>
       </div>
 
+      <!-- 緊湊型明細清單表格 -->
       <div class="table-container">
-        <table class="items-table">
+        <table class="compact-table">
           <thead>
             <tr>
-              <th style="width: 50%;">項目名稱</th>
-              <th style="width: 40%;">金額 (NT$)</th>
-              <th style="width: 10%;">操作</th>
+              <th class="th-index">#</th>
+              <th class="th-name">項目名稱</th>
+              <th class="th-value">金額 (NT$)</th>
+              <th class="th-action">操作</th>
             </tr>
           </thead>
           <tbody>
             @for (item of items; track item.id; let i = $index) {
-              <tr>
-                <td>
-                  <mat-form-field appearance="outline" class="dense-field">
-                    <input matInput [(ngModel)]="item.name" placeholder="例如：台幣活存、富邦證券" required>
-                  </mat-form-field>
+              <tr class="item-row">
+                <td class="td-index">{{ i + 1 }}</td>
+                <td class="td-name">
+                  <input
+                    type="text"
+                    class="compact-input"
+                    [(ngModel)]="item.name"
+                    placeholder="項目名稱 (例如：台幣活存、富邦證券)"
+                    required
+                  />
                 </td>
-                <td>
-                  <mat-form-field appearance="outline" class="dense-field">
-                    <input matInput type="number" [(ngModel)]="item.value" placeholder="金額" required>
-                  </mat-form-field>
+                <td class="td-value">
+                  <div class="currency-input-wrap">
+                    <span class="currency-prefix">NT$</span>
+                    <input
+                      type="number"
+                      class="compact-input input-number"
+                      [(ngModel)]="item.value"
+                      (keydown.enter)="onEnterValue(i)"
+                      placeholder="0"
+                      required
+                    />
+                  </div>
                 </td>
-                <td class="action-cell">
-                  <button mat-icon-button color="warn" (click)="removeItem(i)" [disabled]="items.length === 1">
-                    <mat-icon>delete</mat-icon>
+                <td class="td-action">
+                  <button
+                    mat-icon-button
+                    type="button"
+                    class="delete-btn"
+                    color="warn"
+                    (click)="removeItem(i)"
+                    [disabled]="items.length === 1"
+                    matTooltip="刪除此項目"
+                  >
+                    <mat-icon>delete_outline</mat-icon>
                   </button>
                 </td>
               </tr>
@@ -88,75 +128,296 @@ export interface AssetDialogData {
       </div>
 
       @if (errorMessage) {
-        <p class="error-msg">{{ errorMessage }}</p>
+        <div class="error-banner">
+          <mat-icon class="error-icon">error_outline</mat-icon>
+          <span>{{ errorMessage }}</span>
+        </div>
       }
-    </mat-dialog-content>
 
-    <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close>取消</button>
-      <button mat-flat-button color="primary" (click)="onSave()">儲存</button>
-    </mat-dialog-actions>
+      <!-- 底部動作按鈕 -->
+      <div class="dialog-actions">
+        <div class="footer-hint">
+          共 {{ items.length }} 個項目
+        </div>
+        <div class="actions-right">
+          <button mat-button mat-dialog-close>取消</button>
+          <button mat-flat-button color="primary" (click)="onSave()" class="save-btn">儲存記錄</button>
+        </div>
+      </div>
+    </div>
   `,
   styles: [`
-    .dialog-content {
-      min-width: 550px;
-      max-width: 750px;
-      padding-top: 8px;
+    .dialog-wrapper {
+      padding: 18px 24px 16px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
     }
-    .header-inputs {
+
+    /* 頂部 Header */
+    .dialog-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #eef0f4;
+      margin-bottom: 12px;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .header-icon {
+      color: #3f51b5;
+      font-size: 26px;
+      width: 26px;
+      height: 26px;
+    }
+    .dialog-title {
+      margin: 0;
+      font-size: 19px;
+      font-weight: 600;
+      color: #1a237e;
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .quick-btn {
+      height: 34px;
+      line-height: 34px;
+      font-size: 13px;
+    }
+    .close-btn {
+      width: 34px;
+      height: 34px;
+      color: #777;
+    }
+
+    /* 控制列 */
+    .control-bar {
       display: flex;
       align-items: center;
       gap: 16px;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
+      background: #f8fafc;
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
     }
-    .date-field {
-      flex: 1;
-    }
-    .load-last-btn {
-      height: 52px;
-    }
-    .items-header {
+    .date-control {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      margin-top: 12px;
-      margin-bottom: 8px;
-      padding-bottom: 4px;
-      border-bottom: 1px solid #e0e0e0;
+      gap: 8px;
     }
-    .items-header h3 {
-      margin: 0;
-      font-size: 16px;
+    .control-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: #475569;
+      white-space: nowrap;
+    }
+    .custom-date-input {
+      height: 34px;
+      padding: 4px 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 13.5px;
+      font-family: inherit;
+      color: #1e293b;
+      background-color: #fff;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+
+      &:focus {
+        border-color: #3f51b5;
+        box-shadow: 0 0 0 2px rgba(63, 81, 181, 0.15);
+      }
+    }
+    .control-spacer {
+      flex: 1 1 auto;
+    }
+    .total-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #e8f5e9;
+      border: 1px solid #c8e6c9;
+      padding: 4px 12px;
+      border-radius: 16px;
+    }
+    .total-label {
+      font-size: 12.5px;
+      color: #2e7d32;
       font-weight: 500;
     }
-    .table-container {
-      max-height: 380px;
-      overflow-y: auto;
+    .total-value {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1b5e20;
     }
-    .items-table {
+    .add-item-btn {
+      height: 34px;
+      line-height: 34px;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 0 12px;
+    }
+
+    /* 緊湊型清單表格 */
+    .table-container {
+      max-height: 52vh;
+      overflow-y: auto;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      background: #fff;
+    }
+    .compact-table {
       width: 100%;
       border-collapse: collapse;
+      table-layout: fixed;
     }
-    .items-table th {
+    .compact-table thead {
+      position: sticky;
+      top: 0;
+      background: #f1f5f9;
+      z-index: 2;
+    }
+    .compact-table th {
+      padding: 7px 10px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #475569;
+      border-bottom: 1px solid #cbd5e1;
       text-align: left;
-      padding: 8px;
-      font-size: 13px;
-      color: #666;
     }
-    .items-table td {
-      padding: 4px 6px;
+    .th-index { width: 38px; text-align: center !important; }
+    .th-name { width: 50%; }
+    .th-value { width: 38%; }
+    .th-action { width: 44px; text-align: center !important; }
+
+    .item-row {
+      height: 40px;
+      border-bottom: 1px solid #f1f5f9;
+      transition: background-color 0.15s;
+
+      &:hover {
+        background-color: #f8fafc;
+      }
     }
-    .dense-field {
-      width: 100%;
-      margin-bottom: -16px;
+    .compact-table td {
+      padding: 3px 6px;
+      vertical-align: middle;
     }
-    .action-cell {
+    .td-index {
+      text-align: center;
+      font-size: 12px;
+      color: #94a3b8;
+      font-weight: 500;
+    }
+    .td-action {
       text-align: center;
     }
-    .error-msg {
-      color: #f44336;
+
+    /* 緊湊輸入框 */
+    .compact-input {
+      width: 100%;
+      height: 32px;
+      padding: 4px 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 5px;
+      font-size: 13.5px;
+      font-family: inherit;
+      color: #1e293b;
+      box-sizing: border-box;
+      outline: none;
+      background-color: #fff;
+      transition: border-color 0.2s, box-shadow 0.2s;
+
+      &:focus {
+        border-color: #3f51b5;
+        box-shadow: 0 0 0 2px rgba(63, 81, 181, 0.15);
+      }
+      &::placeholder {
+        color: #94a3b8;
+        font-size: 12.5px;
+      }
+    }
+
+    .currency-input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .currency-prefix {
+      position: absolute;
+      left: 9px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #64748b;
+      pointer-events: none;
+    }
+    .input-number {
+      padding-left: 36px;
+      text-align: right;
+      font-weight: 600;
+      color: #0f172a;
+    }
+
+    .delete-btn {
+      width: 30px;
+      height: 30px;
+      line-height: 30px;
+      padding: 0;
+
+      mat-icon {
+        font-size: 19px;
+        width: 19px;
+        height: 19px;
+      }
+    }
+
+    /* 錯誤警示條 */
+    .error-banner {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 10px;
+      padding: 6px 12px;
+      background-color: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 6px;
+      color: #dc2626;
       font-size: 13px;
-      margin-top: 12px;
+    }
+    .error-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+
+    /* 底部按鈕區 */
+    .dialog-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 14px;
+      padding-top: 10px;
+      border-top: 1px solid #eef0f4;
+    }
+    .footer-hint {
+      font-size: 12.5px;
+      color: #64748b;
+    }
+    .actions-right {
+      display: flex;
+      gap: 8px;
+    }
+    .save-btn {
+      min-width: 100px;
+      height: 36px;
     }
   `]
 })
@@ -205,6 +466,12 @@ export class AssetDialogComponent implements OnInit {
     });
   }
 
+  onEnterValue(index: number): void {
+    if (index === this.items.length - 1) {
+      this.addItem();
+    }
+  }
+
   removeItem(index: number): void {
     if (this.items.length > 1) {
       this.items.splice(index, 1);
@@ -234,3 +501,4 @@ export class AssetDialogComponent implements OnInit {
     });
   }
 }
+

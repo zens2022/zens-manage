@@ -398,7 +398,8 @@ export class AssetPageComponent implements OnInit {
   openCreateDialog(): void {
     const lastItems = this.localService.getLastItems();
     const dialogRef = this.dialog.open(AssetDialogComponent, {
-      width: '640px',
+      width: '740px',
+      maxWidth: '95vw',
       data: { lastItems }
     });
 
@@ -414,7 +415,8 @@ export class AssetPageComponent implements OnInit {
 
   openEditDialog(record: AssetRecord): void {
     const dialogRef = this.dialog.open(AssetDialogComponent, {
-      width: '640px',
+      width: '740px',
+      maxWidth: '95vw',
       data: { editRecord: record }
     });
 
