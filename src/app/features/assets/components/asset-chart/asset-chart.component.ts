@@ -157,7 +157,7 @@ export class AssetChartComponent implements OnInit, OnChanges, OnDestroy {
         }
       },
       grid: {
-        left: '3%',
+        left: '2%',
         right: '4%',
         bottom: '8%',
         top: '10%',
@@ -170,9 +170,23 @@ export class AssetChartComponent implements OnInit, OnChanges, OnDestroy {
       },
       yAxis: {
         type: 'value',
+        scale: true, // 脫離 0 基準線，自動聚焦在資料的波動範圍
+        min: (value: { min: number; max: number }) => {
+          const span = value.max - value.min;
+          const padding = span > 0 ? span * 0.15 : (value.min * 0.05 || 10000);
+          return Math.max(0, Math.floor(value.min - padding));
+        },
+        max: (value: { min: number; max: number }) => {
+          const span = value.max - value.min;
+          const padding = span > 0 ? span * 0.15 : (value.max * 0.05 || 10000);
+          return Math.ceil(value.max + padding);
+        },
         axisLabel: {
           formatter: (val: number) => {
-            if (val >= 1000000) return (val / 1000000).toFixed(1) + 'M';
+            if (val >= 1000000) {
+              const m = val / 1000000;
+              return m.toFixed(2) + 'M';
+            }
             if (val >= 1000) return (val / 1000).toFixed(0) + 'K';
             return val.toLocaleString();
           }
