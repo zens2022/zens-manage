@@ -30,11 +30,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        # 使用 npm install 避免跨作業系統 (Windows vs Linux) 的可選依賴不同步問題 (與 Dockerfile 一致)
+        run: npm install
 
       - name: Build Angular App
         run: npm run build -- --base-href /zens-manage/
