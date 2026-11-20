@@ -1,0 +1,121 @@
+<div class="dialog-wrapper">
+  <!-- 頂部標題與快速工具列 -->
+  <div class="dialog-header">
+    <div class="header-left">
+      <mat-icon class="header-icon">{{ isEdit ? 'edit_note' : 'post_add' }}</mat-icon>
+      <h2 class="dialog-title">{{ isEdit ? '編輯資產記錄' : '新增資產記錄' }}</h2>
+    </div>
+
+    <div class="header-actions">
+      @if (!isEdit && data.lastItems && data.lastItems.length > 0) {
+        <button mat-stroked-button color="primary" type="button" (click)="loadLastItems()" class="quick-btn">
+          <mat-icon>history</mat-icon>
+          帶入上次項目 ({{ data.lastItems.length }}項)
+        </button>
+      }
+      <button mat-icon-button mat-dialog-close class="close-btn" title="關閉">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- 控制列：記錄日期與總計徽章 -->
+  <div class="control-bar">
+    <div class="date-control">
+      <label for="record-date" class="control-label">記錄日期</label>
+      <input
+        id="record-date"
+        type="date"
+        class="custom-date-input"
+        [(ngModel)]="date"
+        required
+      />
+    </div>
+
+    <div class="control-spacer"></div>
+
+    <div class="total-badge">
+      <span class="total-label">資產總計</span>
+      <span class="total-value">NT$ {{ calculateTotal().toLocaleString() }}</span>
+    </div>
+
+    <button mat-flat-button color="primary" type="button" (click)="addItem()" class="add-item-btn">
+      <mat-icon>add</mat-icon>
+      新增項目
+    </button>
+  </div>
+
+  <!-- 緊湊型明細清單表格 -->
+  <div class="table-container">
+    <table class="compact-table">
+      <thead>
+        <tr>
+          <th class="th-index">#</th>
+          <th class="th-name">項目名稱</th>
+          <th class="th-value">金額 (NT$)</th>
+          <th class="th-action">操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of items; track item.id; let i = $index) {
+          <tr class="item-row">
+            <td class="td-index">{{ i + 1 }}</td>
+            <td class="td-name">
+              <input
+                type="text"
+                class="compact-input"
+                [(ngModel)]="item.name"
+                placeholder="項目名稱 (例如：台幣活存、富邦證券)"
+                required
+              />
+            </td>
+            <td class="td-value">
+              <div class="currency-input-wrap">
+                <span class="currency-prefix">NT$</span>
+                <input
+                  type="number"
+                  class="compact-input input-number"
+                  [(ngModel)]="item.value"
+                  (keydown.enter)="onEnterValue(i)"
+                  placeholder="0"
+                  required
+                />
+              </div>
+            </td>
+            <td class="td-action">
+              <button
+                mat-icon-button
+                type="button"
+                class="delete-btn"
+                color="warn"
+                (click)="removeItem(i)"
+                [disabled]="items.length === 1"
+                matTooltip="刪除此項目"
+              >
+                <mat-icon>delete_outline</mat-icon>
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (errorMessage) {
+    <div class="error-banner">
+      <mat-icon class="error-icon">error_outline</mat-icon>
+      <span>{{ errorMessage }}</span>
+    </div>
+  }
+
+  <!-- 底部動作按鈕 -->
+  <div class="dialog-actions">
+    <div class="footer-hint">
+      共 {{ items.length }} 個項目
+    </div>
+    <div class="actions-right">
+      <button mat-button mat-dialog-close>取消</button>
+      <button mat-flat-button color="primary" (click)="onSave()" class="save-btn">儲存記錄</button>
+    </div>
+  </div>
+</div>

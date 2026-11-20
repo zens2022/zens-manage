@@ -1,0 +1,128 @@
+<div class="page-container">
+  <!-- 頂部操作與統計列 -->
+  <div class="action-bar">
+    <div>
+      <h1 class="page-title">資產清單 (Assets)</h1>
+      <p class="page-subtitle">共 {{ allAssets().length }} 筆歷史記錄</p>
+    </div>
+    <div class="action-buttons">
+      <button mat-flat-button color="primary" (click)="openCreateDialog()" class="new-asset-btn">
+        <mat-icon>add</mat-icon>
+        新增資產記錄
+      </button>
+    </div>
+  </div>
+
+  <!-- 空資料引導卡片 -->
+  @if (allAssets().length === 0) {
+    <mat-card class="empty-card">
+      <mat-card-content class="empty-content">
+        <mat-icon class="empty-icon">account_balance</mat-icon>
+        <h2>目前尚無資產記錄</h2>
+        <p>您可以點擊「新增資產記錄」開始建立，或者由右上角選單匯入過往 JSON 備份檔。</p>
+        <div class="empty-actions">
+          <button mat-flat-button color="primary" (click)="openCreateDialog()">
+            <mat-icon>add</mat-icon>
+            開始第一筆記錄
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  } @else {
+    <!-- 資產趨勢圖表 (支援點擊跳轉) -->
+    <app-asset-chart [data]="allAssets()" (pointClick)="onChartPointClick($event)"></app-asset-chart>
+
+    <!-- 資產表格卡片 -->
+    <mat-card class="table-card">
+      <div class="table-responsive">
+        <table mat-table [dataSource]="pagedAssets()" multiTemplateDataRows class="asset-table">
+          
+          <!-- 展開箭頭欄位 -->
+          <ng-container matColumnDef="expand">
+            <th mat-header-cell *matHeaderCellDef style="width: 48px;"></th>
+            <td mat-cell *matCellDef="let element">
+              <button mat-icon-button (click)="toggleExpand(element); $event.stopPropagation()">
+                <mat-icon>{{ isExpanded(element) ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <!-- 日期欄位 -->
+          <ng-container matColumnDef="date">
+            <th mat-header-cell *matHeaderCellDef>記錄日期</th>
+            <td mat-cell *matCellDef="let element" class="font-medium">
+              {{ element.date }}
+            </td>
+          </ng-container>
+
+          <!-- 總額欄位 -->
+          <ng-container matColumnDef="total">
+            <th mat-header-cell *matHeaderCellDef>總資產</th>
+            <td mat-cell *matCellDef="let element" class="total-cell font-bold">
+              NT$ {{ element.total.toLocaleString() }}
+            </td>
+          </ng-container>
+
+          <!-- 操作欄位 -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef class="actions-header">操作</th>
+            <td mat-cell *matCellDef="let element" class="actions-cell">
+              <div class="actions-container">
+                <button mat-icon-button color="primary" (click)="openEditDialog(element); $event.stopPropagation()" title="編輯">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button color="warn" (click)="confirmDelete(element); $event.stopPropagation()" title="刪除">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- 展開明細列 -->
+          <ng-container matColumnDef="expandedDetail">
+            <td mat-cell *matCellDef="let element" [attr.colspan]="displayedColumns.length">
+              <div class="detail-wrapper" [class.collapsed]="!isExpanded(element)">
+                <div class="detail-box">
+                  <h4 class="detail-title">資產明細清單 ({{ element.date }})</h4>
+                  <table class="detail-table">
+                    <thead>
+                      <tr>
+                        <th>項目名稱</th>
+                        <th style="text-align: right;">金額</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (item of element.items; track item.id) {
+                        <tr>
+                          <td>{{ item.name }}</td>
+                          <td style="text-align: right;">NT$ {{ item.value.toLocaleString() }}</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let element; columns: displayedColumns;"
+              [attr.id]="'asset-row-' + element.id"
+              class="element-row cursor-pointer"
+              [class.highlight-flash]="highlightedId === element.id"
+              (click)="toggleExpand(element)">
+          </tr>
+          <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"></tr>
+        </table>
+      </div>
+
+      <mat-paginator
+        [length]="allAssets().length"
+        [pageSize]="pageSize"
+        [pageIndex]="pageIndex"
+        [pageSizeOptions]="[5, 10, 25, 50]"
+        (page)="onPageChange($event)">
+      </mat-paginator>
+    </mat-card>
+  }
+</div>

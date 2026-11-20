@@ -8,42 +8,8 @@ import { AssetRecord } from '../../../../models/asset.model';
   selector: 'app-asset-chart',
   standalone: true,
   imports: [CommonModule, MatCardModule],
-  template: `
-    <mat-card class="chart-card">
-      <mat-card-header>
-        <mat-card-title class="chart-header-title">
-          <span>資產趨勢分析 (Asset Trend)</span>
-          <span class="hint-text">💡 點擊圖表中的資料點可直接跳轉至該筆明細</span>
-        </mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <div #chartContainer class="chart-container"></div>
-      </mat-card-content>
-    </mat-card>
-  `,
-  styles: [`
-    .chart-card {
-      margin-bottom: 24px;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-    }
-    .chart-header-title {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-      font-size: 18px;
-    }
-    .hint-text {
-      font-size: 13px;
-      font-weight: normal;
-      color: #666;
-    }
-    .chart-container {
-      width: 100%;
-      height: 340px;
-    }
-  `]
+  templateUrl: './asset-chart.component.html',
+  styleUrl: './asset-chart.component.scss'
 })
 export class AssetChartComponent implements OnInit, OnChanges, OnDestroy {
   @Input() data: AssetRecord[] = [];

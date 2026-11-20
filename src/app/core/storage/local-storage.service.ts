@@ -55,7 +55,7 @@ export class LocalStorageService {
   createEmptyData(): ZensAppData {
     return {
       schemaVersion: 1,
-      lastModified: new Date().toISOString(),
+      lastModified: '',
       deviceId: this.ensureDeviceId(),
       assets: []
     };
