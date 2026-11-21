@@ -1,9 +1,10 @@
 import { Routes } from '@angular/router';
+import { AssetPageComponent } from './features/assets/asset-page.component';
 
 export const routes: Routes = [
   {
     path: '',
-    loadComponent: () => import('./features/assets/asset-page.component').then(m => m.AssetPageComponent)
+    component: AssetPageComponent
   },
   {
     path: '**',
