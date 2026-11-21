@@ -1,10 +1,13 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
 import { AssetItem, AssetRecord, ZensAppData } from '../../models/asset.model';
+import { CryptoService } from '../crypto/crypto.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class LocalStorageService {
+  private cryptoService = inject(CryptoService);
+
   private readonly STORAGE_KEY = 'zens_assets_app_data';
   private readonly DEVICE_ID_KEY = 'zens_device_id';
 
@@ -15,6 +18,7 @@ export class LocalStorageService {
   }
 
   private ensureDeviceId(): string {
+    if (typeof window === 'undefined') return 'server_device';
     let id = localStorage.getItem(this.DEVICE_ID_KEY);
     if (!id) {
       id = 'dev_' + Math.random().toString(36).substring(2, 10);
@@ -33,22 +37,39 @@ export class LocalStorageService {
     }
     const raw = localStorage.getItem(this.STORAGE_KEY);
     if (!raw) {
-      const initial = this.createEmptyData();
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(initial));
-      return initial;
+      return this.createEmptyData();
     }
     try {
       const parsed = JSON.parse(raw);
-      // 相容性檢查
+      // 若為加密資料，未登入前暫不載入明文
+      if (parsed && parsed.zensEncrypted) {
+        return this.createEmptyData();
+      }
       if (!parsed.assets || !Array.isArray(parsed.assets)) {
         parsed.assets = [];
       }
       return parsed;
-    } catch (e) {
-      console.error('Failed to parse local storage data, resetting', e);
-      const fallback = this.createEmptyData();
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(fallback));
-      return fallback;
+    } catch {
+      return this.createEmptyData();
+    }
+  }
+
+  /**
+   * 當登入成功、金鑰衍生完成後，解密本地儲存的加密快取
+   */
+  async loadEncryptedData(): Promise<void> {
+    if (typeof window === 'undefined') return;
+    const raw = localStorage.getItem(this.STORAGE_KEY);
+    if (!raw) return;
+
+    try {
+      const decrypted = await this.cryptoService.decrypt<ZensAppData>(raw);
+      if (decrypted && Array.isArray(decrypted.assets)) {
+        this.appData.set(decrypted);
+      }
+    } catch (err) {
+      console.warn('[LocalStorage] 解密本機暫存失敗或格式不符，重設為空資料', err);
+      this.clearData();
     }
   }
 
@@ -66,15 +87,37 @@ export class LocalStorageService {
   }
 
   /**
-   * 覆寫整份 AppData (包含更新 lastModified)
+   * 覆寫整份 AppData (包含更新 lastModified 與 AES 加密寫入本機快取)
    */
   saveData(data: ZensAppData, updateTimestamp: boolean = true): void {
     if (updateTimestamp) {
       data.lastModified = new Date().toISOString();
       data.deviceId = this.getDeviceId();
     }
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
     this.appData.set({ ...data });
+
+    if (typeof window === 'undefined') return;
+
+    if (this.cryptoService.hasKey()) {
+      this.cryptoService.encrypt(data).then(encryptedStr => {
+        localStorage.setItem(this.STORAGE_KEY, encryptedStr);
+      }).catch(err => {
+        console.error('[LocalStorage] 加密儲存失敗', err);
+      });
+    } else {
+      // 未初始化金鑰時不儲存明文
+      localStorage.removeItem(this.STORAGE_KEY);
+    }
+  }
+
+  /**
+   * 清除本地所有資產暫存
+   */
+  clearData(): void {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(this.STORAGE_KEY);
+    }
+    this.appData.set(this.createEmptyData());
   }
 
   /**
@@ -94,7 +137,6 @@ export class LocalStorageService {
   getLastItems(): AssetItem[] {
     const sorted = [...this.appData().assets].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     if (sorted.length > 0 && sorted[0].items && sorted[0].items.length > 0) {
-      // 複製名稱，數值可清空或預載
       return sorted[0].items.map(i => ({
         id: 'item_' + Math.random().toString(36).substring(2, 9),
         name: i.name,
@@ -124,7 +166,6 @@ export class LocalStorageService {
     let savedRecord: AssetRecord;
 
     if (record.id) {
-      // 更新既有記錄
       const index = currentData.assets.findIndex(a => a.id === record.id);
       if (index !== -1) {
         savedRecord = {
@@ -147,7 +188,6 @@ export class LocalStorageService {
         currentData.assets.push(savedRecord);
       }
     } else {
-      // 新增記錄
       savedRecord = {
         id: 'asset_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
         date: record.date,
@@ -185,7 +225,6 @@ export class LocalStorageService {
       throw new Error('無效的備份資料格式：缺少 assets 陣列');
     }
 
-    const current = this.getData();
     const assets: AssetRecord[] = importedData.assets.map((a: any) => ({
       id: String(a.id || 'asset_' + Math.random().toString(36).substring(2, 8)),
       date: a.date,

@@ -27,6 +27,7 @@ export interface ZensAppData {
 export type SyncStatus = 'synced' | 'pending' | 'syncing' | 'offline' | 'error';
 
 export interface UserProfile {
+  id?: string;
   email: string;
   name: string;
   picture: string;

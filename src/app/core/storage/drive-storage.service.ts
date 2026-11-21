@@ -1,10 +1,13 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ZensAppData } from '../../models/asset.model';
+import { CryptoService } from '../crypto/crypto.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class DriveStorageService {
+  private cryptoService = inject(CryptoService);
+
   private readonly DRIVE_API_BASE = 'https://www.googleapis.com/drive/v3';
   private readonly UPLOAD_API_BASE = 'https://www.googleapis.com/upload/drive/v3';
 
@@ -37,7 +40,7 @@ export class DriveStorageService {
   }
 
   /**
-   * 下載檔案內容 (JSON)
+   * 下載檔案內容並自動以 AES 解密
    */
   async downloadFile(token: string, fileId: string): Promise<ZensAppData> {
     const url = `${this.DRIVE_API_BASE}/files/${fileId}?alt=media`;
@@ -56,17 +59,22 @@ export class DriveStorageService {
       throw new Error(`Drive download failed: ${res.statusText}`);
     }
 
-    return await res.json();
+    const rawData = await res.json();
+    // 透過 CryptoService 解密 (若為舊未加密檔則自動相容還原)
+    return await this.cryptoService.decrypt<ZensAppData>(rawData);
   }
 
   /**
-   * 建立新檔案 (Multipart upload)
+   * 建立新檔案 (以 AES 加密內容後 Multipart upload)
    */
   async createFile(token: string, filename: string, content: ZensAppData): Promise<{ id: string }> {
     const metadata = {
       name: filename,
       mimeType: 'application/json'
     };
+
+    // 加密內容
+    const encryptedBody = await this.cryptoService.encrypt(content);
 
     const boundary = '-------zens_drive_boundary_' + Date.now();
     const delimiter = `\r\n--${boundary}\r\n`;
@@ -78,7 +86,7 @@ export class DriveStorageService {
       JSON.stringify(metadata) +
       delimiter +
       'Content-Type: application/json\r\n\r\n' +
-      JSON.stringify(content, null, 2) +
+      encryptedBody +
       closeDelimiter;
 
     const res = await fetch(`${this.UPLOAD_API_BASE}/files?uploadType=multipart`, {
@@ -102,16 +110,19 @@ export class DriveStorageService {
   }
 
   /**
-   * 更新現有檔案內容
+   * 更新現有檔案內容 (以 AES 加密內容後上傳)
    */
   async updateFile(token: string, fileId: string, content: ZensAppData): Promise<void> {
+    // 加密內容
+    const encryptedBody = await this.cryptoService.encrypt(content);
+
     const res = await fetch(`${this.UPLOAD_API_BASE}/files/${fileId}?uploadType=media`, {
       method: 'PATCH',
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(content, null, 2)
+      body: encryptedBody
     });
 
     if (res.status === 401) {
