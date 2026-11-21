@@ -1,0 +1,47 @@
+<div class="page-container">
+  @if (!authService.isLoggedIn()) {
+    <app-auth-lock></app-auth-lock>
+  } @else {
+    <!-- 頂部操作與統計列 -->
+    <div class="action-bar">
+      <div>
+        <h1 class="page-title">資產清單 (Assets)</h1>
+        <p class="page-subtitle">共 {{ allAssets().length }} 筆歷史記錄</p>
+      </div>
+      <div class="action-buttons">
+        <button mat-flat-button color="primary" (click)="openCreateDialog()" class="new-asset-btn">
+          <mat-icon>add</mat-icon>
+          新增資產記錄
+        </button>
+      </div>
+    </div>
+
+    <!-- 空資料引導卡片 -->
+    @if (allAssets().length === 0) {
+      <mat-card class="empty-card">
+        <mat-card-content class="empty-content">
+          <mat-icon class="empty-icon">account_balance</mat-icon>
+          <h2>目前尚無資產記錄</h2>
+          <p>您可以點擊「新增資產記錄」開始建立，或者由右上角選單匯入過往 JSON 備份檔。</p>
+          <div class="empty-actions">
+            <button mat-flat-button color="primary" (click)="openCreateDialog()">
+              <mat-icon>add</mat-icon>
+              開始第一筆記錄
+            </button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    } @else {
+      <!-- 資產趨勢圖表 -->
+      <app-asset-chart [data]="allAssets()" (pointClick)="onChartPointClick($event)"></app-asset-chart>
+
+      <!-- 資產明細表格 -->
+      <app-asset-table
+        #assetTable
+        [assets]="allAssets()"
+        (edit)="openEditDialog($event)"
+        (delete)="confirmDelete($event)">
+      </app-asset-table>
+    }
+  }
+</div>

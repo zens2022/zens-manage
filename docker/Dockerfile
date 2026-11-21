@@ -1,36 +1,28 @@
-# Stage 1: Build Frontend
-FROM node:20-alpine AS frontend-build
-WORKDIR /app/frontend
-# Copy package files first for caching
-COPY frontend/package*.json ./
-RUN npm ci
-COPY frontend/ ./
-# Build (output usually to dist)
+# Stage 1: Build Angular App
+FROM node:20-alpine AS builder
+WORKDIR /app
+
+# Copy dependency specifications
+COPY package*.json ./
+RUN npm install
+
+# Copy source and build
+COPY . ./
 RUN npm run build
 
-# Stage 2: Production Runtime
-FROM node:20-alpine
-WORKDIR /app/backend
+# Stage 2: Production Nginx Server
+FROM nginx:alpine
+WORKDIR /usr/share/nginx/html
 
-# Copy backend dependencies
-COPY backend/package*.json ./
-RUN npm ci --omit=dev
+# Clean default nginx files
+RUN rm -rf ./*
 
-# Copy backend source
-COPY backend/ ./
+# Copy built artifacts from builder stage
+COPY --from=builder /app/dist/zens-manage/browser ./
 
-# Create data directory for SQLite persistence
-RUN mkdir -p data
+# Copy custom Nginx configuration
+COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
 
-# Copy frontend build artifacts to backend/public
-COPY --from=frontend-build /app/frontend/dist ./public
+EXPOSE 80
 
-# Environment variables
-ENV NODE_ENV=production
-ENV PORT=3000
-
-# Expose port
-EXPOSE 3000
-
-# Start command
-CMD ["npm", "start"]
+CMD ["nginx", "-g", "daemon off;"]

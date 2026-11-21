@@ -1,348 +1,177 @@
-# Zens Manage - 資產管理系統
+# Zens Manage - 個人雲端資產管理系統 (Serverless & E2EE Edition)
 
-一個全端資產管理應用程式，使用 **Node.js (Koa)** 和 **React** 構建。
+一個現代化、高隱私、零後端 (Serverless / No-Backend) 的個人資產追蹤與財務管理系統。使用 **Angular 21**、**Angular Material** 構建，透過 **Google Identity Services (OAuth 2.0)** 登入，並以使用者的個人 **Google Drive** 作為永久雲端儲存中心。
 
-## 📋 目錄
+全系統實施 **端到端加密 (E2EE)**：所有資產資料在本地暫存 (LocalStorage) 及雲端檔案皆以 **AES-GCM 256 位元** 加密存儲，唯有登入您本人的 Google 帳號才能解鎖還原。
 
-- [專案概述](#專案概述)
-- [功能特色](#功能特色)
-- [技術棧](#技術棧)
-- [專案結構](#專案結構)
-- [環境需求](#環境需求)
-- [快速開始](#快速開始)
-- [測試](#測試)
-- [API 文檔](#api-文檔)
-- [部署](#部署)
-- [常見問題](#常見問題)
-
-## 專案概述
-
-Zens Manage 是一個資產管理系統，允許用戶追蹤和管理每月資產記錄。系統支援用戶管理、資產記錄的 CRUD 操作，以及資料視覺化。
-
-### 主要功能
-
-- 👤 **用戶管理**：管理員可以創建、編輯、啟用/停用和刪除用戶
-- 💰 **資產管理**：用戶可以記錄每月資產明細
-- 📊 **數據視覺化**：使用折線圖展示資產趨勢
-- 🔐 **權限控制**：基於 JWT 的身份驗證，區分管理員和普通用戶權限
-- 🔍 **數據過濾**：管理員可查看所有用戶資料，普通用戶僅能查看自己的資料
-
-## 功能特色
-
-### 用戶管理
-- 創建新用戶（管理員權限）
-- 編輯用戶資訊
-- 啟用/停用用戶狀態
-- 刪除用戶（需先停用）
-- 用戶搜尋功能
-
-### 資產管理
-- 新增每月資產記錄
-- 編輯現有資產記錄
-- 刪除資產記錄
-- 自動計算資產小計
-- 按用戶過濾資產資料
-- 分頁顯示資產列表
-- 資產趨勢圖表展示
-
-## 技術棧
-
-### Backend
-- **框架**: Koa.js
-- **資料庫**: SQLite + Sequelize ORM
-- **認證**: JWT (JSON Web Tokens)
-- **密碼加密**: bcryptjs
-- **測試**: Jest + Supertest
-- **開發工具**: Nodemon
-
-### Frontend
-- **框架**: React 19
-- **建置工具**: Vite
-- **UI 框架**: Material-UI (MUI)
-- **圖表**: Recharts
-- **路由**: React Router v7
-- **測試**: Jest + React Testing Library
-- **日期處理**: Moment.js
-
-## 專案結構
-
-```
-zens-manage/
-├── backend/                 # 後端 API 服務
-│   ├── src/
-│   │   ├── config/         # 配置文件（資料庫等）
-│   │   ├── controllers/    # 控制器層
-│   │   ├── middleware/     # 中間件（認證、錯誤處理）
-│   │   ├── models/         # Sequelize 模型
-│   │   ├── repositories/   # 資料存取層
-│   │   ├── routes/         # 路由定義
-│   │   ├── services/       # 業務邏輯層
-│   │   └── app.js          # 應用入口
-│   ├── tests/              # 測試文件
-│   │   ├── user.test.js    # 用戶 API 測試
-│   │   └── asset.test.js   # 資產 API 測試
-│   ├── data/               # SQLite 資料庫文件
-│   └── package.json
-├── frontend/               # 前端應用
-│   ├── src/
-│   │   ├── components/     # 可重用組件
-│   │   ├── pages/          # 頁面組件
-│   │   ├── services/       # API 服務
-│   │   ├── tests/          # 測試文件
-│   │   ├── utils/          # 工具函數
-│   │   ├── App.jsx         # 主應用組件
-│   │   └── main.jsx        # 應用入口
-│   └── package.json
-└── README.md               # 本文件
-```
-
-## 環境需求
-
-- **Node.js**: v18.0.0 或更高版本
-- **npm**: v9.0.0 或更高版本
-- **作業系統**: Windows / macOS / Linux
-
-## 快速開始
-
-### 1. 克隆專案
-
-```bash
-git clone <repository-url>
-cd zens-manage
-```
-
-### 2. 後端設置
-
-```bash
-cd backend
-npm install
-npm run dev
-```
-
-後端服務將在 `http://localhost:3000` 啟動。
-
-**預設管理員帳號**（首次啟動自動創建）：
-- 用戶名：`admin`
-- 密碼：`admin123`
-
-### 3. 前端設置
-
-開啟新的終端視窗：
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-前端應用將在 `http://localhost:5173` 啟動。
-
-### 4. 訪問應用
-
-在瀏覽器中打開 `http://localhost:5173`，使用預設管理員帳號登入。
-
-## 測試
-
-### 後端測試
-
-```bash
-cd backend
-npm test
-```
-
-測試覆蓋：
-- ✅ 用戶 API（登入、創建、更新、狀態變更、刪除）
-- ✅ 資產 API（創建、列表、更新、刪除）
-- ✅ 認證中間件
-- ✅ 資料庫操作
-
-### 前端測試
-
-```bash
-cd frontend
-npm test
-```
-
-測試覆蓋：
-- ✅ Login 組件渲染
-- ✅ AssetPage 數據加載
-- ✅ UserManagement 基本功能
-
-### 測試覆蓋率
-
-```bash
-# 後端
-cd backend
-npm test -- --coverage
-
-# 前端
-cd frontend
-npm test -- --coverage
-```
-
-## API 文檔
-
-### 認證
-
-所有 API（除了登入）都需要在 Header 中包含 JWT Token：
-
-```
-Authorization: Bearer <token>
-```
-
-### 用戶 API
-
-| 方法 | 端點 | 描述 | 權限 |
-|------|------|------|------|
-| POST | `/api/user/login` | 用戶登入 | 公開 |
-| GET | `/api/user/list` | 獲取用戶列表 | 需認證 |
-| POST | `/api/user/create` | 創建新用戶 | 需認證 |
-| POST | `/api/user/update` | 更新用戶資訊 | 需認證 |
-| POST | `/api/user/change-status` | 變更用戶狀態 | 需認證 |
-| POST | `/api/user/delete` | 刪除用戶 | 需認證 |
-
-### 資產 API
-
-| 方法 | 端點 | 描述 | 權限 |
-|------|------|------|------|
-| GET | `/api/asset/list` | 獲取資產列表 | 需認證 |
-| POST | `/api/asset/create` | 創建資產記錄 | 需認證 |
-| PUT | `/api/asset/:id` | 更新資產記錄 | 需認證 |
-| DELETE | `/api/asset/:id` | 刪除資產記錄 | 需認證 |
-| GET | `/api/asset/last-items` | 獲取最後一次的資產項目 | 需認證 |
-
-### API 請求範例
-
-#### 登入
-
-```bash
-curl -X POST http://localhost:3000/api/user/login \
-  -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"admin123"}'
-```
-
-#### 創建資產記錄
-
-```bash
-curl -X POST http://localhost:3000/api/asset/create \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer <your-token>" \
-  -d '{
-    "date": "2025-01-01",
-    "items": [
-      {"name": "股票", "value": 100000},
-      {"name": "現金", "value": 50000}
-    ]
-  }'
-```
-
-## 部署
-
-### 生產環境建置
-
-#### 後端
-
-```bash
-cd backend
-npm start
-```
-
-#### 前端
-
-```bash
-cd frontend
-npm run build
-```
-
-建置後的文件將在 `frontend/dist` 目錄中。
-
-### 環境變數
-
-創建 `.env` 文件（可選）：
-
-```env
-# Backend
-PORT=3000
-JWT_SECRET=your-secret-key
-NODE_ENV=production
-
-# Frontend
-VITE_API_URL=http://localhost:3000
-```
-
-### Docker 部署（可選）
-
-如果專案包含 Docker 配置：
-
-```bash
-docker-compose up -d
-```
-
-## 常見問題
-
-### Q: 首次啟動後端時資料庫在哪裡？
-
-A: SQLite 資料庫文件位於 `backend/data/database.sqlite`。測試環境使用記憶體資料庫。
-
-### Q: 如何重置資料庫？
-
-A: 刪除 `backend/data/database.sqlite` 文件，重新啟動後端服務即可。
-
-### Q: 忘記管理員密碼怎麼辦？
-
-A: 刪除資料庫文件重新啟動，或直接在資料庫中更新密碼（需要 bcrypt 加密）。
-
-### Q: 測試失敗怎麼辦？
-
-A: 
-1. 確保 Node.js 版本 >= 18
-2. 刪除 `node_modules` 和 `package-lock.json`，重新安裝
-3. 確保沒有其他服務佔用 3000 或 5173 端口
-
-### Q: 前端無法連接後端？
-
-A: 
-1. 確認後端服務已啟動在 `http://localhost:3000`
-2. 檢查瀏覽器控制台的 CORS 錯誤
-3. 確認 API 請求路徑正確
-
-### Q: 如何添加新用戶？
-
-A: 使用管理員帳號登入後，在用戶管理頁面點擊「New User」按鈕。
-
-## 開發指南
-
-### 代碼風格
-
-- 使用 ES6+ 語法
-- 使用 ESLint 進行代碼檢查
-- 遵循 Airbnb JavaScript Style Guide
-
-### Git 工作流程
-
-1. 從 `main` 分支創建功能分支
-2. 完成功能開發並通過測試
-3. 提交 Pull Request
-4. Code Review 後合併
-
-### 貢獻指南
-
-歡迎提交 Issue 和 Pull Request！
-
-1. Fork 本專案
-2. 創建功能分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交變更 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 開啟 Pull Request
-
-## 授權
-
-本專案採用 ISC 授權。
-
-## 聯絡方式
-
-如有問題或建議，請提交 Issue 或聯繫專案維護者。
+🌐 **線上正式版**：[https://zens2022.github.io/zens-manage/](https://zens2022.github.io/zens-manage/)
 
 ---
 
-**最後更新**: 2026-02-15
+## 📋 目錄
+- [🌟 系統特色](#-系統特色)
+- [🛠️ 技術架構](#️-技術架構)
+- [🔐 端到端加密與安全機制](#-端到端加密與安全機制)
+- [🚀 快速開始 (Quick Start)](#-快速開始-quick-start)
+- [⚙️ Google Cloud Console 設定指南](#️-google-cloud-console-設定指南)
+- [🚢 部署方式](#-部署方式)
+  - [1. GitHub Pages (自動化 CI/CD)](#1-github-pages-自動化-cicd)
+  - [2. 本地 Docker 容器化部署](#2-本地-docker-容器化部署)
+- [📁 專案結構](#-專案結構)
+
+---
+
+## 🌟 系統特色
+
+* 🔒 **端到端加密 (End-to-End Encryption)**：以 Google 唯一使用者標識透過 PBKDF2 衍生專屬 AES-GCM 256 金鑰，本地與雲端檔案皆為密文，即使檔案外洩也無法被第三方解密。
+* 🛡️ **強制登入與自動銷毀快取**：全系統需登入才可存取；登出或 OAuth Token 過期時自動徹底銷毀本地暫存與金鑰，不留任何痕跡。
+* ⚡ **本地優先 (Local-First)**：讀寫操作優先於瀏覽器端 LocalStorage 毫秒級執行，介面反應零延遲。
+* 🔄 **智慧雙向同步與防洗白保護**：
+  * 當本地為空時，自動從 Google Drive 下載最新資產還原，防止意外覆寫洗空雲端資料。
+  * 支援 3.5 秒自動防抖背景同步與右上角手動強制同步。
+* 📈 **互動式趨勢分析圖 (ECharts)**：視覺化呈現資產成長曲線，支援點擊圖表節點直接平滑滾動跳轉至下方明細並展開播放高亮動畫。
+* 📑 **歷史明細一鍵帶入**：新增資產記錄時可直接一鍵帶入上次項目名稱，大幅節省記帳時間。
+* 📡 **離線韌性 (Offline Capability)**：自動偵測連線狀態，離線時資料妥善加密保存在本機，恢復網路時自動補傳同步。
+
+---
+
+## 🛠️ 技術架構
+
+| 領域 | 技術 / 工具 | 說明 |
+| :--- | :--- | :--- |
+| **前端框架** | Angular 21 (Signals, Standalone Components, RxJS) | 現代化響應式狀態管理與組件化架構 |
+| **UI 元件庫** | Angular Material (MDC Components) | 現代化簡約質感介面 |
+| **安全加密** | Web Crypto API (`window.crypto.subtle`) | 原生高強度 AES-GCM 256 + PBKDF2 (SHA-256) |
+| **身分驗證** | Google Identity Services (GIS SDK - OAuth 2.0) | 安全無密碼登入驗證 |
+| **雲端存儲** | Google Drive API v3 (REST) | 僅要求 `drive.file` 最低權限，專屬保存 `zens_assets_v1.json` |
+| **圖表視覺化** | Apache ECharts | 互動式資產歷史趨勢分析圖表 |
+| **CI/CD & 部署** | GitHub Actions / GitHub Pages / Docker (Nginx Alpine) | 全自動雲端部署與輕量容器化支援 |
+
+---
+
+## 🔐 端到端加密與安全機制
+
+```
+[Google OAuth 登入] 
+       │
+       ▼
+取得使用者固定標識 (sub + email) ──► PBKDF2 (100,000 次疊代) ──► 衍生 AES-GCM 256-bit 金鑰
+                                                                     │
+       ┌─────────────────────────────────────────────────────────────┴────────────────────────────────┐
+       ▼                                                                                              ▼
+【本機暫存加密】                                                                                【雲端同步加密】
+LocalStorage 存儲 JSON 密文:                                                                    Google Drive 上傳 JSON 密文:
+{                                                                                              {
+  "zensEncrypted": true,                                                                         "zensEncrypted": true,
+  "iv": "<Base64_IV>",                                                                           "iv": "<Base64_IV>",
+  "ciphertext": "<Base64_Ciphertext>"                                                            "ciphertext": "<Base64_Ciphertext>"
+}                                                                                              }
+```
+
+* **跨裝置無縫相容**：無論在手機、筆電或平板，只要使用同一 Google 帳號登入，系統即衍生出完全相同的金鑰，可自動解密雲端同步的資產記錄。
+* **安全沙盒**：金鑰僅保留於當前瀏覽器 Session 記憶體中，登出或過期立即銷毀。
+
+---
+
+## 🚀 快速開始 (Quick Start)
+
+### 1. 環境需求
+* **Node.js**: `v20.x` 或 `v22.x` 以上 (建議 LTS 版本)
+* **npm**: `v10.x` 或 `v11.x`
+
+### 2. 安裝與本地啟動
+```bash
+# 複製儲存庫
+git clone https://github.com/zens2022/zens-manage.git
+cd zens-manage
+
+# 安裝依賴
+npm install
+
+# 啟動開發伺服器
+npm start
+```
+開啟瀏覽器訪問 `http://localhost:4200` 即可預覽。
+
+### 3. 生產環境建置
+```bash
+npm run build -- --base-href /zens-manage/
+```
+編譯產物將輸出於 `dist/zens-manage/browser/` 目錄。
+
+---
+
+## ⚙️ Google Cloud Console 設定指南
+
+若要自建或設定您自己的 Google OAuth 登入與 Drive 同步：
+
+1. 前往 [Google Cloud Console](https://console.cloud.google.com/) 建立專案。
+2. 至 **API 和服務** > **已啟用的 API 和服務**，搜尋並啟用 **Google Drive API**。
+3. 設定 **OAuth 同意畫面**：
+   * **使用者類型**：外部 (External)
+   * **應用程式首頁 / 隱私權政策**：填入您的網址（例如 `https://zens2022.github.io/zens-manage/`）
+   * **已授權網域**：填入網域名稱（例如 `zens2022.github.io`，勿帶 `https://` 或斜線）
+   * **授權範圍 (Scopes)**：加入 `https://www.googleapis.com/auth/drive.file`、`.../userinfo.profile`、`.../userinfo.email`
+   * **測試使用者**：加入您的 Google 信箱（例如 `your-email@gmail.com`）。*(維持測試中狀態免官方人工審查)*
+4. 至 **憑證** (Credentials) > **建立憑證** > **OAuth 2.0 用戶端 ID**：
+   * **應用程式類型**：網頁應用程式 (Web application)
+   * **已獲授權的 JavaScript 來源**：
+     * 本地測試：`http://localhost:4200`
+     * 線上環境：`https://zens2022.github.io` *(⚠️ 注意：Google 規範來源只能包含協定與網域，絕對不能帶路徑或結尾斜線)*
+5. 複製生成的 **Client ID**，填入 `src/environments/environment.ts` 與 `environment.prod.ts` 的 `googleClientId`。
+
+---
+
+## 🚢 部署方式
+
+### 1. GitHub Pages (自動化 CI/CD)
+本專案已配置完整 GitHub Actions 工作流程 ([.github/workflows/deploy.yml](.github/workflows/deploy.yml))：
+1. 在 GitHub 倉庫點選 **Settings** > **Pages**。
+2. 將 **Build and deployment > Source** 設定為 **`GitHub Actions`**。
+3. 只要 Push 代碼至 `main` 或 `migration` 分支，即會自動觸發打包建置，並安全發布至 GitHub Pages！
+
+### 2. 本地 Docker 容器化部署
+專案根目錄內建 `docker/` 目錄，內含 Multi-stage Dockerfile 與 Nginx 最佳化配置：
+```bash
+# 啟動容器 (預設映射至主機 Port 3000)
+docker compose -f docker/docker-compose.yml up --build -d
+
+# 停止容器
+docker compose -f docker/docker-compose.yml down
+```
+啟動後瀏覽 `http://localhost:3000` 即可存取。
+
+---
+
+## 📁 專案結構
+
+```
+zens-manage/
+├── .github/workflows/deploy.yml    # GitHub Pages 自動化 CI/CD 工作流程
+├── docker/                         # Dockerfile, nginx.conf, docker-compose.yml
+├── src/
+│   ├── app/
+│   │   ├── core/                   # 核心基礎服務層
+│   │   │   ├── auth/               # Google OAuth 2.0 身分驗證服務
+│   │   │   ├── crypto/             # AES-GCM 256 位元端到端加解密服務
+│   │   │   ├── network/            # 網路連線狀態即時監聽服務
+│   │   │   ├── storage/            # LocalStorage 與 Google Drive 雲端存取
+│   │   │   └── sync/               # 雙向智慧同步與防洗白協調器 (SyncManager)
+│   │   ├── features/assets/        # 資產業務功能模組
+│   │   │   ├── components/         # 獨立拆分之 Presentational Components
+│   │   │   │   ├── asset-chart/    # ECharts 資產趨勢圖表元件
+│   │   │   │   ├── asset-dialog/   # 新增/編輯資產對話框
+│   │   │   │   ├── asset-table/    # 資產列表表格、分頁與展開明細元件
+│   │   │   │   └── auth-lock/      # 未登入安全鎖定與引導登入卡片
+│   │   │   ├── asset-page.component.ts/html/scss  # 資產主頁面容器 (Smart Container)
+│   │   ├── models/                 # 全域資料模型定義 (TypeScript Interfaces)
+│   │   ├── shared/components/      # 通用元件 (Header 導覽列與同步狀態燈)
+│   │   ├── app.ts / app.html       # 應用程式根佈局元件
+│   │   └── app.routes.ts           # 路由設定
+│   ├── environments/               # 環境配置檔 (Client ID、Drive 檔名等)
+│   ├── index.html                  # 應用程式入口 HTML
+│   └── styles.scss                 # 全域樣式與 Material 主題配置
+├── angular.json                    # Angular CLI 配置 (已最佳化 bundle 預算)
+├── package.json                    # 專案依賴與 NPM Scripts
+└── README.md                       # 專案完整說明文件
+```
