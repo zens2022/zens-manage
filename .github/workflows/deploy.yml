@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - migration
   # 允許在 GitHub 頁面手動點擊觸發 (Actions -> Run workflow)
   workflow_dispatch:
 
@@ -18,10 +17,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-and-deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  # 1. 建置階段
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -34,7 +31,6 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        # 使用 npm install 避免跨作業系統 (Windows vs Linux) 的可選依賴不同步問題 (與 Dockerfile 一致)
         run: npm install
 
       - name: Build Angular App
@@ -46,8 +42,16 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'dist/zens-manage/browser'
+          path: './dist/zens-manage/browser'
 
+  # 2. 部署階段 (獨立 Job，確保 artifact 完全確認上傳後再部署)
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
