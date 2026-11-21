@@ -1,0 +1,38 @@
+<mat-card class="auth-lock-card">
+  <mat-card-content class="auth-lock-content">
+    <div class="lock-icon-wrapper">
+      <mat-icon class="lock-icon">lock</mat-icon>
+    </div>
+    <h1 class="auth-title">Zens Manage 資產管理系統</h1>
+    <p class="auth-subtitle">端到端加密．全隱私保障．Google Drive 自動同步</p>
+    
+    <div class="security-intro-box">
+      <div class="security-item">
+        <mat-icon class="security-icon">vpn_key</mat-icon>
+        <div>
+          <strong>個人專屬金鑰衍生</strong>
+          <p>以您的 Google 唯一帳號特徵衍生 AES-GCM 256 位元金鑰，無人可竊取還原。</p>
+        </div>
+      </div>
+      <div class="security-item">
+        <mat-icon class="security-icon">enhanced_encryption</mat-icon>
+        <div>
+          <strong>雙重端到端加密存儲</strong>
+          <p>本機暫存（LocalStorage）與 Google Drive 備份皆經過高規格密文加密存儲。</p>
+        </div>
+      </div>
+      <div class="security-item">
+        <mat-icon class="security-icon">delete_forever</mat-icon>
+        <div>
+          <strong>登出或過期自動銷毀快取</strong>
+          <p>登出或 Token 過期時自動徹底清除本機暫存資料，不留任何痕跡。</p>
+        </div>
+      </div>
+    </div>
+
+    <button mat-flat-button color="primary" class="login-action-btn" (click)="authService.login()">
+      <mat-icon>login</mat-icon>
+      以 Google 帳號登入並解鎖
+    </button>
+  </mat-card-content>
+</mat-card>

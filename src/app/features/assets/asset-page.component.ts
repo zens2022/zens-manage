@@ -1,17 +1,17 @@
-import { Component, OnInit, inject, signal, effect } from '@angular/core';
+import { Component, OnInit, inject, signal, effect, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
-import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AuthService } from '../../core/auth/auth.service';
 import { LocalStorageService } from '../../core/storage/local-storage.service';
 import { SyncManagerService } from '../../core/sync/sync-manager.service';
 import { AssetRecord } from '../../models/asset.model';
+import { AuthLockComponent } from './components/auth-lock/auth-lock.component';
 import { AssetChartComponent } from './components/asset-chart/asset-chart.component';
+import { AssetTableComponent } from './components/asset-table/asset-table.component';
 import { AssetDialogComponent } from './components/asset-dialog/asset-dialog.component';
 
 @Component({
@@ -20,13 +20,13 @@ import { AssetDialogComponent } from './components/asset-dialog/asset-dialog.com
   imports: [
     CommonModule,
     MatCardModule,
-    MatTableModule,
     MatButtonModule,
     MatIconModule,
     MatDialogModule,
-    MatPaginatorModule,
     MatSnackBarModule,
-    AssetChartComponent
+    AuthLockComponent,
+    AssetChartComponent,
+    AssetTableComponent
   ],
   templateUrl: './asset-page.component.html',
   styleUrl: './asset-page.component.scss'
@@ -38,15 +38,9 @@ export class AssetPageComponent implements OnInit {
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
 
+  @ViewChild('assetTable') assetTable?: AssetTableComponent;
+
   allAssets = signal<AssetRecord[]>([]);
-  pagedAssets = signal<AssetRecord[]>([]);
-
-  displayedColumns = ['expand', 'date', 'total', 'actions'];
-  expandedAssetIds = new Set<string>();
-  highlightedId: string | null = null;
-
-  pageIndex = 0;
-  pageSize = 10;
 
   constructor() {
     effect(() => {
@@ -63,64 +57,13 @@ export class AssetPageComponent implements OnInit {
   refreshAssets(): void {
     const list = this.localService.getAssets();
     this.allAssets.set(list);
-    this.updatePagedAssets();
-  }
-
-  updatePagedAssets(): void {
-    const start = this.pageIndex * this.pageSize;
-    const end = start + this.pageSize;
-    this.pagedAssets.set(this.allAssets().slice(start, end));
-  }
-
-  onPageChange(event: PageEvent): void {
-    this.pageIndex = event.pageIndex;
-    this.pageSize = event.pageSize;
-    this.updatePagedAssets();
-  }
-
-  isExpanded(row: AssetRecord): boolean {
-    return this.expandedAssetIds.has(row.id);
-  }
-
-  toggleExpand(row: AssetRecord): void {
-    if (this.expandedAssetIds.has(row.id)) {
-      this.expandedAssetIds.delete(row.id);
-    } else {
-      this.expandedAssetIds.add(row.id);
-    }
   }
 
   /**
-   * 當使用者點擊 Trend 折線圖的資料點時
+   * 當使用者點擊 Trend 折線圖的資料點時，委託 AssetTable 元件執行跳轉與高亮
    */
   onChartPointClick(record: AssetRecord): void {
-    const list = this.allAssets();
-    const index = list.findIndex(a => a.id === record.id);
-    if (index === -1) return;
-
-    // 計算該筆記錄在哪一頁
-    const targetPage = Math.floor(index / this.pageSize);
-    if (this.pageIndex !== targetPage) {
-      this.pageIndex = targetPage;
-      this.updatePagedAssets();
-    }
-
-    // 自動展開該列
-    this.expandedAssetIds.add(record.id);
-
-    // 平滑滾動至該列並給予高亮動畫
-    setTimeout(() => {
-      const el = document.getElementById('asset-row-' + record.id);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        this.highlightedId = record.id;
-        setTimeout(() => {
-          this.highlightedId = null;
-        }, 2500);
-      }
-    }, 120);
-
-    this.snackBar.open(`已為您跳轉並展開 ${record.date} 之記錄明細`, '好', { duration: 2500 });
+    this.assetTable?.highlightRecord(record);
   }
 
   openCreateDialog(): void {
