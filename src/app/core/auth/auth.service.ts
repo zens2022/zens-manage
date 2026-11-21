@@ -1,6 +1,8 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { UserProfile } from '../../models/asset.model';
+import { CryptoService } from '../crypto/crypto.service';
+import { LocalStorageService } from '../storage/local-storage.service';
 
 declare const google: any;
 
@@ -8,18 +10,63 @@ declare const google: any;
   providedIn: 'root'
 })
 export class AuthService {
+  private cryptoService = inject(CryptoService);
+  private localService = inject(LocalStorageService);
+
   private readonly TOKEN_KEY = 'zens_google_token';
   private readonly USER_KEY = 'zens_google_user';
   private readonly EXPIRES_AT_KEY = 'zens_google_token_expires_at';
 
   readonly accessToken = signal<string | null>(this.getStoredToken());
   readonly currentUser = signal<UserProfile | null>(this.getStoredUser());
-  readonly isLoggedIn = signal<boolean>(!!this.getStoredToken());
+  readonly isLoggedIn = signal<boolean>(false);
 
   private tokenClient: any = null;
+  private tokenCheckInterval: any = null;
 
   constructor() {
-    this.checkTokenValidity();
+    this.restoreSessionOrLogout();
+    this.startTokenExpiryWatch();
+  }
+
+  /**
+   * 檢查現有 Session，若有效則自動初始化金鑰並恢復登入狀態；若無效則徹底清除本機快取
+   */
+  private async restoreSessionOrLogout(): Promise<void> {
+    const token = this.getStoredToken();
+    const user = this.getStoredUser();
+    const expiresAtStr = typeof window !== 'undefined' ? sessionStorage.getItem(this.EXPIRES_AT_KEY) : null;
+
+    if (token && user && expiresAtStr) {
+      const expiresAt = parseInt(expiresAtStr, 10);
+      if (Date.now() < expiresAt) {
+        // Token 仍在有效期內，衍生金鑰並載入本機加密資料
+        if (user.id) {
+          await this.cryptoService.initKey(user.id, user.email);
+          await this.localService.loadEncryptedData();
+        }
+        this.accessToken.set(token);
+        this.currentUser.set(user);
+        this.isLoggedIn.set(true);
+        return;
+      }
+    }
+
+    // 若無 Token 或已過期，徹底登出並清除所有本機暫存
+    this.logout();
+  }
+
+  /**
+   * 啟動 Token 定時監控，過期時立即清除本機暫存
+   */
+  private startTokenExpiryWatch(): void {
+    if (typeof window === 'undefined') return;
+    if (this.tokenCheckInterval) {
+      clearInterval(this.tokenCheckInterval);
+    }
+    this.tokenCheckInterval = setInterval(() => {
+      this.checkTokenValidity();
+    }, 10000); // 每 10 秒檢查一次
   }
 
   /**
@@ -29,7 +76,6 @@ export class AuthService {
     if (this.tokenClient) return true;
     if (typeof window === 'undefined') return false;
 
-    // 等待 Google Identity Services 腳本載入
     let attempts = 0;
     while (!(window as any).google?.accounts?.oauth2 && attempts < 20) {
       await new Promise(resolve => setTimeout(resolve, 200));
@@ -66,43 +112,56 @@ export class AuthService {
       alert('Google 服務載入失敗或正在載入中，請稍後再試。');
       return;
     }
-    // 請求 Token
     this.tokenClient.requestAccessToken({ prompt: 'consent' });
   }
 
   /**
-   * 登出並清除本機授權資訊
+   * 登出並清除本機所有快取資料與加密金鑰
    */
   logout(): void {
     const token = this.accessToken();
-    if (token && (window as any).google?.accounts?.oauth2) {
-      (window as any).google.accounts.oauth2.revoke(token, () => {
-        console.log('Google token revoked');
-      });
+    if (token && typeof window !== 'undefined' && (window as any).google?.accounts?.oauth2) {
+      try {
+        (window as any).google.accounts.oauth2.revoke(token, () => {
+          console.log('Google token revoked');
+        });
+      } catch (e) {
+        console.warn('Revoke token error', e);
+      }
     }
 
-    sessionStorage.removeItem(this.TOKEN_KEY);
-    sessionStorage.removeItem(this.USER_KEY);
-    sessionStorage.removeItem(this.EXPIRES_AT_KEY);
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem(this.TOKEN_KEY);
+      sessionStorage.removeItem(this.USER_KEY);
+      sessionStorage.removeItem(this.EXPIRES_AT_KEY);
+    }
+
+    // 清除加密金鑰
+    this.cryptoService.clearKey();
+
+    // 清除本地暫存資料
+    this.localService.clearData();
 
     this.accessToken.set(null);
     this.currentUser.set(null);
     this.isLoggedIn.set(false);
   }
 
-  private handleTokenSuccess(tokenResponse: any): void {
+  private async handleTokenSuccess(tokenResponse: any): Promise<void> {
     const token = tokenResponse.access_token;
     const expiresIn = Number(tokenResponse.expires_in) || 3600;
     const expiresAt = Date.now() + (expiresIn - 60) * 1000;
 
-    sessionStorage.setItem(this.TOKEN_KEY, token);
-    sessionStorage.setItem(this.EXPIRES_AT_KEY, expiresAt.toString());
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem(this.TOKEN_KEY, token);
+      sessionStorage.setItem(this.EXPIRES_AT_KEY, expiresAt.toString());
+    }
 
     this.accessToken.set(token);
-    this.isLoggedIn.set(true);
 
-    // 載入使用者個人資訊
-    this.fetchUserProfile(token);
+    // 載入使用者個人資訊並初始化加密金鑰
+    await this.fetchUserProfile(token);
+    this.isLoggedIn.set(true);
   }
 
   private async fetchUserProfile(token: string): Promise<void> {
@@ -113,12 +172,23 @@ export class AuthService {
       if (res.ok) {
         const data = await res.json();
         const profile: UserProfile = {
+          id: data.sub || '',
           email: data.email || '',
           name: data.name || data.email || 'Google User',
           picture: data.picture || ''
         };
-        sessionStorage.setItem(this.USER_KEY, JSON.stringify(profile));
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem(this.USER_KEY, JSON.stringify(profile));
+        }
         this.currentUser.set(profile);
+
+        // 根據使用者唯一 sub 與 email 初始化 AES 加密金鑰
+        if (profile.id) {
+          await this.cryptoService.initKey(profile.id, profile.email);
+          await this.localService.loadEncryptedData();
+        }
+      } else if (res.status === 401) {
+        this.logout();
       }
     } catch (err) {
       console.warn('Failed to fetch Google profile', err);
@@ -126,12 +196,16 @@ export class AuthService {
   }
 
   private checkTokenValidity(): void {
+    if (typeof window === 'undefined') return;
     const expiresAtStr = sessionStorage.getItem(this.EXPIRES_AT_KEY);
     if (expiresAtStr) {
       const expiresAt = parseInt(expiresAtStr, 10);
       if (Date.now() > expiresAt) {
+        console.warn('[Auth] Google OAuth Token 已過期，自動清除暫存並登出');
         this.logout();
       }
+    } else if (this.isLoggedIn()) {
+      this.logout();
     }
   }
 

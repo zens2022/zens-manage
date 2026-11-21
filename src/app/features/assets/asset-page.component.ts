@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { AuthService } from '../../core/auth/auth.service';
 import { LocalStorageService } from '../../core/storage/local-storage.service';
 import { SyncManagerService } from '../../core/sync/sync-manager.service';
 import { AssetRecord } from '../../models/asset.model';
@@ -31,6 +32,7 @@ import { AssetDialogComponent } from './components/asset-dialog/asset-dialog.com
   styleUrl: './asset-page.component.scss'
 })
 export class AssetPageComponent implements OnInit {
+  public authService = inject(AuthService);
   private localService = inject(LocalStorageService);
   private syncManager = inject(SyncManagerService);
   private dialog = inject(MatDialog);
