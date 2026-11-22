@@ -140,11 +140,12 @@ export class LocalStorageService {
       return sorted[0].items.map(i => ({
         id: 'item_' + Math.random().toString(36).substring(2, 9),
         name: i.name,
-        value: 0
+        value: 0,
+        category: i.category || 'none'
       }));
     }
     return [
-      { id: 'item_' + Math.random().toString(36).substring(2, 9), name: '', value: 0 }
+      { id: 'item_' + Math.random().toString(36).substring(2, 9), name: '', value: 0, category: 'none' }
     ];
   }
 
@@ -158,7 +159,8 @@ export class LocalStorageService {
     const items = record.items.map(item => ({
       id: item.id || 'item_' + Math.random().toString(36).substring(2, 9),
       name: item.name.trim(),
-      value: Number(item.value) || 0
+      value: Number(item.value) || 0,
+      category: item.category || 'none'
     }));
 
     const total = items.reduce((sum, item) => sum + item.value, 0);
@@ -231,7 +233,8 @@ export class LocalStorageService {
       items: (a.items || []).map((it: any) => ({
         id: String(it.id || 'item_' + Math.random().toString(36).substring(2, 8)),
         name: it.name || '',
-        value: Number(it.value) || 0
+        value: Number(it.value) || 0,
+        category: it.category || 'none'
       })),
       total: Number(a.total) || 0,
       createdAt: a.createdAt || new Date().toISOString(),
