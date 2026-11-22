@@ -189,10 +189,11 @@
   overflow: hidden;
   white-space: nowrap;
 }
-.th-index { width: 38px; text-align: center !important; }
-.th-name { width: calc(60% - 42px); }
-.th-value { width: calc(40% - 42px); }
-.th-action { width: 46px; text-align: center !important; }
+.th-index { width: 36px; text-align: center !important; }
+.th-category { width: 96px; }
+.th-name { width: calc(58% - 66px); }
+.th-value { width: calc(42% - 66px); }
+.th-action { width: 44px; text-align: center !important; }
 
 .item-row {
   height: 40px;
@@ -220,6 +221,27 @@
   text-align: center;
   padding: 3px 2px;
   white-space: nowrap;
+}
+
+.compact-select {
+  width: 100%;
+  height: 32px;
+  padding: 2px 4px;
+  border: 1px solid #cbd5e1;
+  border-radius: 5px;
+  font-size: 12.5px;
+  font-family: inherit;
+  color: #1e293b;
+  box-sizing: border-box;
+  outline: none;
+  background-color: #f8fafc;
+  cursor: pointer;
+  transition: border-color 0.15s;
+
+  &:focus {
+    border-color: #3f51b5;
+    background-color: #fff;
+  }
 }
 
 /* 緊湊輸入框 (使用 inset 陰影，絕不溢出觸發捲軸) */

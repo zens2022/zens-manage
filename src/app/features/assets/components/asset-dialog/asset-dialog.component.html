@@ -51,6 +51,7 @@
       <thead>
         <tr>
           <th class="th-index">#</th>
+          <th class="th-category">類型</th>
           <th class="th-name">項目名稱</th>
           <th class="th-value">金額 (NT$)</th>
           <th class="th-action">操作</th>
@@ -60,6 +61,14 @@
         @for (item of items; track item.id; let i = $index) {
           <tr class="item-row">
             <td class="td-index">{{ i + 1 }}</td>
+            <td class="td-category">
+              <select class="compact-select" [(ngModel)]="item.category">
+                <option value="none">未分類</option>
+                <option value="cash">💵 現金</option>
+                <option value="investment">📈 投資</option>
+                <option value="other">📂 其他</option>
+              </select>
+            </td>
             <td class="td-name">
               <input
                 type="text"

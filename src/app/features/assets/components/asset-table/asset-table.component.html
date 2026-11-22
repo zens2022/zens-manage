@@ -52,6 +52,7 @@
               <table class="detail-table">
                 <thead>
                   <tr>
+                    <th style="width: 80px;">類型</th>
                     <th>項目名稱</th>
                     <th style="text-align: right;">金額</th>
                   </tr>
@@ -59,6 +60,11 @@
                 <tbody>
                   @for (item of element.items; track item.id) {
                     <tr>
+                      <td>
+                        <span class="category-badge" [class]="item.category || 'none'">
+                          {{ getCategoryLabel(item.category) }}
+                        </span>
+                      </td>
                       <td>{{ item.name }}</td>
                       <td style="text-align: right;">NT$ {{ item.value.toLocaleString() }}</td>
                     </tr>

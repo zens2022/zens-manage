@@ -41,14 +41,17 @@ export class AssetDialogComponent implements OnInit {
     if (this.data?.editRecord) {
       this.isEdit = true;
       this.date = this.data.editRecord.date;
-      this.items = this.data.editRecord.items.map(i => ({ ...i }));
+      this.items = this.data.editRecord.items.map(i => ({
+        ...i,
+        category: i.category || 'none'
+      }));
     } else {
       this.isEdit = false;
       this.date = new Date().toISOString().slice(0, 10);
       if (this.data?.lastItems && this.data.lastItems.length > 0) {
         this.loadLastItems();
       } else {
-        this.items = [{ id: 'item_1', name: '', value: 0 }];
+        this.items = [{ id: 'item_1', name: '', value: 0, category: 'none' }];
       }
     }
   }
@@ -58,7 +61,8 @@ export class AssetDialogComponent implements OnInit {
       this.items = this.data.lastItems.map(it => ({
         id: 'item_' + Math.random().toString(36).substring(2, 9),
         name: it.name,
-        value: 0
+        value: 0,
+        category: it.category || 'none'
       }));
     }
   }
@@ -67,7 +71,8 @@ export class AssetDialogComponent implements OnInit {
     this.items.push({
       id: 'item_' + Math.random().toString(36).substring(2, 9),
       name: '',
-      value: 0
+      value: 0,
+      category: 'none'
     });
   }
 

@@ -6,7 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { AssetRecord } from '../../../../models/asset.model';
+import { AssetRecord, AssetCategory, getCategoryLabel } from '../../../../models/asset.model';
 
 @Component({
   selector: 'app-asset-table',
@@ -37,6 +37,8 @@ export class AssetTableComponent implements OnChanges {
 
   pageIndex = 0;
   pageSize = 10;
+
+  getCategoryLabel = getCategoryLabel;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['assets']) {
