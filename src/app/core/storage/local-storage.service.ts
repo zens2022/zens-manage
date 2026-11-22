@@ -41,7 +41,7 @@ export class LocalStorageService {
     }
     try {
       const parsed = JSON.parse(raw);
-      // 若為加密資料，未登入前暫不載入明文
+      // If encrypted, do not load plaintext before login
       if (parsed && parsed.zensEncrypted) {
         return this.createEmptyData();
       }
@@ -55,7 +55,7 @@ export class LocalStorageService {
   }
 
   /**
-   * 當登入成功、金鑰衍生完成後，解密本地儲存的加密快取
+   * Decrypt locally stored cached data upon successful login and key derivation
    */
   async loadEncryptedData(): Promise<void> {
     if (typeof window === 'undefined') return;
@@ -68,7 +68,7 @@ export class LocalStorageService {
         this.appData.set(decrypted);
       }
     } catch (err) {
-      console.warn('[LocalStorage] 解密本機暫存失敗或格式不符，重設為空資料', err);
+      console.warn('[LocalStorage] Failed to decrypt local storage or invalid format, resetting to empty data', err);
       this.clearData();
     }
   }
@@ -87,7 +87,7 @@ export class LocalStorageService {
   }
 
   /**
-   * 覆寫整份 AppData (包含更新 lastModified 與 AES 加密寫入本機快取)
+   * Overwrite entire AppData (update lastModified and encrypt to local storage)
    */
   saveData(data: ZensAppData, updateTimestamp: boolean = true): void {
     if (updateTimestamp) {
@@ -102,16 +102,16 @@ export class LocalStorageService {
       this.cryptoService.encrypt(data).then(encryptedStr => {
         localStorage.setItem(this.STORAGE_KEY, encryptedStr);
       }).catch(err => {
-        console.error('[LocalStorage] 加密儲存失敗', err);
+        console.error('[LocalStorage] Failed to encrypt data', err);
       });
     } else {
-      // 未初始化金鑰時不儲存明文
+      // Do not store plaintext when key is not initialized
       localStorage.removeItem(this.STORAGE_KEY);
     }
   }
 
   /**
-   * 清除本地所有資產暫存
+   * Clear all local asset caches
    */
   clearData(): void {
     if (typeof window !== 'undefined') {
@@ -121,7 +121,7 @@ export class LocalStorageService {
   }
 
   /**
-   * 取得按日期降序排列的資產清單
+   * Get asset records sorted by date descending
    */
   getAssets(): AssetRecord[] {
     return [...this.appData().assets].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -132,7 +132,7 @@ export class LocalStorageService {
   }
 
   /**
-   * 取得最後一次填寫的資產記錄之明細結構 (用於自動帶入上次名稱)
+   * Get items from the latest record (used to auto-fill previous items)
    */
   getLastItems(): AssetItem[] {
     const sorted = [...this.appData().assets].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -150,7 +150,7 @@ export class LocalStorageService {
   }
 
   /**
-   * 新增或更新單筆資產記錄
+   * Create or update a single asset record
    */
   saveAsset(record: Omit<AssetRecord, 'id' | 'createdAt' | 'updatedAt' | 'total'> & { id?: string }): AssetRecord {
     const currentData = this.getData();
@@ -206,7 +206,7 @@ export class LocalStorageService {
   }
 
   /**
-   * 刪除單筆記錄
+   * Delete a single record
    */
   deleteAsset(id: string): boolean {
     const currentData = this.getData();
@@ -220,11 +220,11 @@ export class LocalStorageService {
   }
 
   /**
-   * 匯入外部 JSON 資料 (例如舊系統 exported_assets.json)
+   * Import external JSON backup (e.g. exported_assets.json)
    */
   importData(importedData: Partial<ZensAppData>): boolean {
     if (!importedData || !Array.isArray(importedData.assets)) {
-      throw new Error('無效的備份資料格式：缺少 assets 陣列');
+      throw new Error('Invalid backup data format: missing assets array');
     }
 
     const assets: AssetRecord[] = importedData.assets.map((a: any) => ({

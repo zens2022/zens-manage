@@ -30,7 +30,7 @@ export class AuthService {
   }
 
   /**
-   * 檢查現有 Session，若有效則自動初始化金鑰並恢復登入狀態；若無效則徹底清除本機快取
+   * Check current session. If valid, initialize crypto key and restore login state; otherwise clear local cache.
    */
   private async restoreSessionOrLogout(): Promise<void> {
     const token = this.getStoredToken();
@@ -40,7 +40,7 @@ export class AuthService {
     if (token && user && expiresAtStr) {
       const expiresAt = parseInt(expiresAtStr, 10);
       if (Date.now() < expiresAt) {
-        // Token 仍在有效期內，衍生金鑰並載入本機加密資料
+        // Token is still valid, derive key and load local encrypted data
         if (user.id) {
           await this.cryptoService.initKey(user.id, user.email);
           await this.localService.loadEncryptedData();
@@ -52,12 +52,12 @@ export class AuthService {
       }
     }
 
-    // 若無 Token 或已過期，徹底登出並清除所有本機暫存
+    // If no token or expired, logout and wipe local cache
     this.logout();
   }
 
   /**
-   * 啟動 Token 定時監控，過期時立即清除本機暫存
+   * Start token expiry polling. Once expired, immediately clear local cache.
    */
   private startTokenExpiryWatch(): void {
     if (typeof window === 'undefined') return;
@@ -66,11 +66,11 @@ export class AuthService {
     }
     this.tokenCheckInterval = setInterval(() => {
       this.checkTokenValidity();
-    }, 10000); // 每 10 秒檢查一次
+    }, 10000); // Check every 10 seconds
   }
 
   /**
-   * 初始化 Google Token Client
+   * Initialize Google Token Client
    */
   async ensureClientInitialized(): Promise<boolean> {
     if (this.tokenClient) return true;
@@ -104,19 +104,19 @@ export class AuthService {
   }
 
   /**
-   * 觸發 Google OAuth 登入彈窗
+   * Trigger Google OAuth login popup
    */
   async login(): Promise<void> {
     const initialized = await this.ensureClientInitialized();
     if (!initialized) {
-      alert('Google 服務載入失敗或正在載入中，請稍後再試。');
+      alert('Google service failed to load or is loading. Please try again in a moment.');
       return;
     }
     this.tokenClient.requestAccessToken({ prompt: 'consent' });
   }
 
   /**
-   * 登出並清除本機所有快取資料與加密金鑰
+   * Logout and clear all local cached data and encryption keys
    */
   logout(): void {
     const token = this.accessToken();
@@ -136,10 +136,10 @@ export class AuthService {
       sessionStorage.removeItem(this.EXPIRES_AT_KEY);
     }
 
-    // 清除加密金鑰
+    // Clear encryption key
     this.cryptoService.clearKey();
 
-    // 清除本地暫存資料
+    // Clear local cached data
     this.localService.clearData();
 
     this.accessToken.set(null);
@@ -159,7 +159,7 @@ export class AuthService {
 
     this.accessToken.set(token);
 
-    // 載入使用者個人資訊並初始化加密金鑰
+    // Fetch user profile and initialize encryption key
     await this.fetchUserProfile(token);
     this.isLoggedIn.set(true);
   }
@@ -182,7 +182,7 @@ export class AuthService {
         }
         this.currentUser.set(profile);
 
-        // 根據使用者唯一 sub 與 email 初始化 AES 加密金鑰
+        // Derive AES key based on unique sub and email
         if (profile.id) {
           await this.cryptoService.initKey(profile.id, profile.email);
           await this.localService.loadEncryptedData();
@@ -201,7 +201,7 @@ export class AuthService {
     if (expiresAtStr) {
       const expiresAt = parseInt(expiresAtStr, 10);
       if (Date.now() > expiresAt) {
-        console.warn('[Auth] Google OAuth Token 已過期，自動清除暫存並登出');
+        console.warn('[Auth] Google OAuth Token expired, auto clearing cache and logging out');
         this.logout();
       }
     } else if (this.isLoggedIn()) {

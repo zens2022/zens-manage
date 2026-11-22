@@ -33,11 +33,11 @@ export class HeaderComponent {
   getSyncTooltip(): string {
     const status = this.syncManager.syncStatus();
     switch (status) {
-      case 'synced': return '資料已成功同步至 Google Drive';
-      case 'syncing': return '正在同步資料至 Google Drive...';
-      case 'pending': return '有本機變更待上傳，即將自動同步';
-      case 'offline': return '目前無網路連線，資料已暫存於本機 LocalStorage';
-      case 'error': return this.syncManager.errorMessage() || '同步失敗';
+      case 'synced': return 'Data successfully synchronized to Google Drive';
+      case 'syncing': return 'Synchronizing data to Google Drive...';
+      case 'pending': return 'Pending local changes, auto-syncing soon';
+      case 'offline': return 'No network connection. Data safely cached in LocalStorage';
+      case 'error': return this.syncManager.errorMessage() || 'Sync failed';
       default: return '';
     }
   }
@@ -64,9 +64,9 @@ export class HeaderComponent {
         const json = JSON.parse(e.target?.result as string);
         this.localService.importData(json);
         this.syncManager.notifyLocalChange();
-        alert(`成功匯入 ${json.assets?.length || 0} 筆資產記錄！`);
+        alert(`Successfully imported ${json.assets?.length || 0} asset record(s)!`);
       } catch (err: any) {
-        alert('匯入失敗：' + (err.message || '檔案格式不正確'));
+        alert('Import failed: ' + (err.message || 'Invalid file format'));
       }
       input.value = '';
     };

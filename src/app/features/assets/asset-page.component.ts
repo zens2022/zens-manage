@@ -46,7 +46,7 @@ export class AssetPageComponent implements OnInit {
 
   constructor() {
     effect(() => {
-      // 監聽 LocalStorageService appData 變更（如 Google Drive 同步下載完成），自動即時刷新畫面
+      // Listen to LocalStorageService appData changes (e.g. cloud download completed) and refresh
       this.localService.appData();
       this.refreshAssets();
     });
@@ -62,7 +62,7 @@ export class AssetPageComponent implements OnInit {
   }
 
   /**
-   * 當使用者點擊 Trend 折線圖的資料點時，委託 AssetTable 元件執行跳轉與高亮
+   * When user clicks a data point on chart, scroll and highlight in AssetTable
    */
   onChartPointClick(record: AssetRecord): void {
     this.assetTable?.highlightRecord(record);
@@ -81,7 +81,7 @@ export class AssetPageComponent implements OnInit {
         this.localService.saveAsset(result);
         this.syncManager.notifyLocalChange();
         this.refreshAssets();
-        this.snackBar.open('資產記錄已儲存！', '關閉', { duration: 3000 });
+        this.snackBar.open('Asset record saved!', 'Close', { duration: 3000 });
       }
     });
   }
@@ -98,17 +98,17 @@ export class AssetPageComponent implements OnInit {
         this.localService.saveAsset({ ...result, id: record.id });
         this.syncManager.notifyLocalChange();
         this.refreshAssets();
-        this.snackBar.open('資產記錄已更新！', '關閉', { duration: 3000 });
+        this.snackBar.open('Asset record updated!', 'Close', { duration: 3000 });
       }
     });
   }
 
   confirmDelete(record: AssetRecord): void {
-    if (confirm(`確定要刪除 ${record.date} 的資產記錄嗎？（此動作無法復原）`)) {
+    if (confirm(`Are you sure you want to delete the asset record for ${record.date}? (This action cannot be undone)`)) {
       this.localService.deleteAsset(record.id);
       this.syncManager.notifyLocalChange();
       this.refreshAssets();
-      this.snackBar.open('記錄已刪除', '關閉', { duration: 3000 });
+      this.snackBar.open('Record deleted', 'Close', { duration: 3000 });
     }
   }
 }

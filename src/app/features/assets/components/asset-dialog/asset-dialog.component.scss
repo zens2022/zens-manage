@@ -7,7 +7,7 @@
   overflow: hidden;
 }
 
-/* 頂部 Header */
+/* Dialog Header */
 .dialog-header {
   display: flex;
   align-items: center;
@@ -85,7 +85,7 @@
   }
 }
 
-/* 控制列 */
+/* Control Bar */
 .control-bar {
   display: flex;
   align-items: center;
@@ -154,12 +154,12 @@
   padding: 0 12px;
 }
 
-/* 緊湊型清單表格 */
+/* Compact items table */
 .table-container {
   max-height: 52vh;
   overflow-y: auto;
-  overflow-x: hidden; /* 徹底杜絕水平捲軸引發的抖動 */
-  scrollbar-gutter: stable; /* 預留捲軸軌道，避免捲軸閃現導致寬度變化 */
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   background: #fff;
@@ -244,7 +244,7 @@
   }
 }
 
-/* 緊湊輸入框 (使用 inset 陰影，絕不溢出觸發捲軸) */
+/* Compact inputs */
 .compact-input {
   width: 100%;
   height: 32px;
@@ -294,7 +294,7 @@
   color: #0f172a;
 }
 
-/* 消除 MDC 按鈕預設 48px touch-target 與 ripple 溢出 */
+/* Button touch-target & ripple override */
 .delete-btn {
   width: 28px !important;
   height: 28px !important;
@@ -321,7 +321,7 @@
   }
 }
 
-/* 錯誤警示條 */
+/* Error banner */
 .error-banner {
   display: flex;
   align-items: center;
@@ -340,7 +340,7 @@
   height: 18px;
 }
 
-/* 底部按鈕區 */
+/* Dialog actions */
 .dialog-actions {
   display: flex;
   align-items: center;

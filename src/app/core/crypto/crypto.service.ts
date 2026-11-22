@@ -15,14 +15,14 @@ export class CryptoService {
   private readonly APP_SALT = 'zens_manage_salt_v1_2026';
 
   /**
-   * 是否已具備加密金鑰
+   * Check if encryption key is ready
    */
   hasKey(): boolean {
     return this.cryptoKey !== null;
   }
 
   /**
-   * 根據 Google User ID (sub) 與 Email 衍生 AES-GCM 256 位元金鑰
+   * Derive AES-GCM 256-bit key based on Google User ID (sub) and Email
    */
   async initKey(googleSub: string, email: string): Promise<void> {
     if (typeof window === 'undefined' || !window.crypto?.subtle) {
@@ -35,7 +35,7 @@ export class CryptoService {
     const rawKey = enc.encode(secretMaterial);
     const salt = enc.encode(this.APP_SALT);
 
-    // 匯入基礎密鑰
+    // Import base key
     const baseKey = await window.crypto.subtle.importKey(
       'raw',
       rawKey,
@@ -44,7 +44,7 @@ export class CryptoService {
       ['deriveKey']
     );
 
-    // 衍生 AES-GCM 256 位元密鑰
+    // Derive AES-GCM 256-bit key
     this.cryptoKey = await window.crypto.subtle.deriveKey(
       {
         name: 'PBKDF2',
@@ -60,25 +60,25 @@ export class CryptoService {
   }
 
   /**
-   * 清除記憶體中的加密金鑰
+   * Clear encryption key in memory
    */
   clearKey(): void {
     this.cryptoKey = null;
   }
 
   /**
-   * 加密資料物件或字串，回傳包含 iv 與 ciphertext 的 JSON 字串
+   * Encrypt data object or string, returning a JSON string with iv and ciphertext
    */
   async encrypt(data: any): Promise<string> {
     if (!this.cryptoKey) {
-      throw new Error('未初始化加密金鑰，無法執行加密');
+      throw new Error('Encryption key not initialized. Cannot perform encryption.');
     }
 
     const plainText = typeof data === 'string' ? data : JSON.stringify(data);
     const enc = new TextEncoder();
     const encodedData = enc.encode(plainText);
 
-    // 產生 12 位元組隨機 IV
+    // Generate 12-byte random IV
     const iv = window.crypto.getRandomValues(new Uint8Array(12));
 
     const cipherBuffer = await window.crypto.subtle.encrypt(
@@ -101,7 +101,7 @@ export class CryptoService {
   }
 
   /**
-   * 解密字串或物件，支援舊版未加密資料的向下相容
+   * Decrypt payload, supporting backward compatibility for unencrypted data
    */
   async decrypt<T = any>(payload: string | any): Promise<T> {
     let parsed: any;
@@ -115,13 +115,13 @@ export class CryptoService {
       parsed = payload;
     }
 
-    // 若不是本系統加密格式，直接視為未加密舊格式相容回傳
+    // If not encrypted format, return directly for backward compatibility
     if (!parsed || !parsed.zensEncrypted || !parsed.iv || !parsed.ciphertext) {
       return parsed as T;
     }
 
     if (!this.cryptoKey) {
-      throw new Error('加密金鑰尚未就緒，無法解密資產資料');
+      throw new Error('Encryption key not ready. Cannot decrypt asset data.');
     }
 
     const iv = this.base64ToBuffer(parsed.iv);

@@ -71,7 +71,7 @@ export class AssetTableComponent implements OnChanges {
   }
 
   /**
-   * 由外部呼叫：跳轉至指定記錄頁、展開明細並播放高亮動畫
+   * Called externally: jump to record's page, expand detail, and trigger highlight flash
    */
   highlightRecord(record: AssetRecord): void {
     const index = this.assets.findIndex(a => a.id === record.id);
@@ -96,6 +96,6 @@ export class AssetTableComponent implements OnChanges {
       }
     }, 120);
 
-    this.snackBar.open(`已為您跳轉並展開 ${record.date} 之記錄明細`, '好', { duration: 2500 });
+    this.snackBar.open(`Jumped to and expanded records for ${record.date}`, 'OK', { duration: 2500 });
   }
 }

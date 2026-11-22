@@ -12,7 +12,7 @@ export class DriveStorageService {
   private readonly UPLOAD_API_BASE = 'https://www.googleapis.com/upload/drive/v3';
 
   /**
-   * 搜尋指定檔名之檔案
+   * Search for a file with the specified filename
    */
   async findFile(token: string, filename: string): Promise<{ id: string; name: string } | null> {
     const query = encodeURIComponent(`name = '${filename}' and trashed = false`);
@@ -40,7 +40,7 @@ export class DriveStorageService {
   }
 
   /**
-   * 下載檔案內容並自動以 AES 解密
+   * Download file content and automatically decrypt with AES
    */
   async downloadFile(token: string, fileId: string): Promise<ZensAppData> {
     const url = `${this.DRIVE_API_BASE}/files/${fileId}?alt=media`;
@@ -60,12 +60,12 @@ export class DriveStorageService {
     }
 
     const rawData = await res.json();
-    // 透過 CryptoService 解密 (若為舊未加密檔則自動相容還原)
+    // Decrypt via CryptoService (backward compatible for unencrypted files)
     return await this.cryptoService.decrypt<ZensAppData>(rawData);
   }
 
   /**
-   * 建立新檔案 (以 AES 加密內容後 Multipart upload)
+   * Create new file (AES encrypted content with multipart upload)
    */
   async createFile(token: string, filename: string, content: ZensAppData): Promise<{ id: string }> {
     const metadata = {
@@ -73,7 +73,7 @@ export class DriveStorageService {
       mimeType: 'application/json'
     };
 
-    // 加密內容
+    // Encrypt content
     const encryptedBody = await this.cryptoService.encrypt(content);
 
     const boundary = '-------zens_drive_boundary_' + Date.now();
@@ -110,10 +110,10 @@ export class DriveStorageService {
   }
 
   /**
-   * 更新現有檔案內容 (以 AES 加密內容後上傳)
+   * Update existing file content (AES encrypted content)
    */
   async updateFile(token: string, fileId: string, content: ZensAppData): Promise<void> {
-    // 加密內容
+    // Encrypt content
     const encryptedBody = await this.cryptoService.encrypt(content);
 
     const res = await fetch(`${this.UPLOAD_API_BASE}/files/${fileId}?uploadType=media`, {

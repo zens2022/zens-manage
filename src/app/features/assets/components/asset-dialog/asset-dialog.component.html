@@ -1,28 +1,28 @@
 <div class="dialog-wrapper">
-  <!-- 頂部標題與快速工具列 -->
+  <!-- Header & quick tools -->
   <div class="dialog-header">
     <div class="header-left">
       <mat-icon class="header-icon">{{ isEdit ? 'edit_note' : 'post_add' }}</mat-icon>
-      <h2 class="dialog-title">{{ isEdit ? '編輯資產記錄' : '新增資產記錄' }}</h2>
+      <h2 class="dialog-title">{{ isEdit ? 'Edit Asset Record' : 'New Asset Record' }}</h2>
     </div>
 
     <div class="header-actions">
       @if (!isEdit && data.lastItems && data.lastItems.length > 0) {
         <button mat-stroked-button color="primary" type="button" (click)="loadLastItems()" class="quick-btn">
           <mat-icon>history</mat-icon>
-          帶入上次項目 ({{ data.lastItems.length }}項)
+          Load Previous Items ({{ data.lastItems.length }})
         </button>
       }
-      <button mat-icon-button mat-dialog-close class="close-btn" title="關閉">
+      <button mat-icon-button mat-dialog-close class="close-btn" title="Close">
         <mat-icon>close</mat-icon>
       </button>
     </div>
   </div>
 
-  <!-- 控制列：記錄日期與總計徽章 -->
+  <!-- Control bar: Record date & total badge -->
   <div class="control-bar">
     <div class="date-control">
-      <label for="record-date" class="control-label">記錄日期</label>
+      <label for="record-date" class="control-label">Record Date</label>
       <input
         id="record-date"
         type="date"
@@ -35,26 +35,26 @@
     <div class="control-spacer"></div>
 
     <div class="total-badge">
-      <span class="total-label">資產總計</span>
+      <span class="total-label">Total Net Worth</span>
       <span class="total-value">NT$ {{ calculateTotal().toLocaleString() }}</span>
     </div>
 
     <button mat-flat-button color="primary" type="button" (click)="addItem()" class="add-item-btn">
       <mat-icon>add</mat-icon>
-      新增項目
+      Add Item
     </button>
   </div>
 
-  <!-- 緊湊型明細清單表格 -->
+  <!-- Compact items table -->
   <div class="table-container">
     <table class="compact-table">
       <thead>
         <tr>
           <th class="th-index">#</th>
-          <th class="th-category">類型</th>
-          <th class="th-name">項目名稱</th>
-          <th class="th-value">金額 (NT$)</th>
-          <th class="th-action">操作</th>
+          <th class="th-category">Category</th>
+          <th class="th-name">Item Name</th>
+          <th class="th-value">Amount (NT$)</th>
+          <th class="th-action">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -63,10 +63,10 @@
             <td class="td-index">{{ i + 1 }}</td>
             <td class="td-category">
               <select class="compact-select" [(ngModel)]="item.category">
-                <option value="none">未分類</option>
-                <option value="cash">💵 現金</option>
-                <option value="investment">📈 投資</option>
-                <option value="other">📂 其他</option>
+                <option value="none">Uncategorized</option>
+                <option value="cash">💵 Cash</option>
+                <option value="investment">📈 Investment</option>
+                <option value="other">📂 Other</option>
               </select>
             </td>
             <td class="td-name">
@@ -74,7 +74,7 @@
                 type="text"
                 class="compact-input"
                 [(ngModel)]="item.name"
-                placeholder="項目名稱 (例如：台幣活存、富邦證券)"
+                placeholder="Item name (e.g. Savings, Brokerage)"
                 required
               />
             </td>
@@ -99,7 +99,7 @@
                 color="warn"
                 (click)="removeItem(i)"
                 [disabled]="items.length === 1"
-                matTooltip="刪除此項目"
+                matTooltip="Delete this item"
               >
                 <mat-icon>delete_outline</mat-icon>
               </button>
@@ -117,14 +117,14 @@
     </div>
   }
 
-  <!-- 底部動作按鈕 -->
+  <!-- Dialog actions -->
   <div class="dialog-actions">
     <div class="footer-hint">
-      共 {{ items.length }} 個項目
+      {{ items.length }} item(s) in total
     </div>
     <div class="actions-right">
-      <button mat-button mat-dialog-close>取消</button>
-      <button mat-flat-button color="primary" (click)="onSave()" class="save-btn">儲存記錄</button>
+      <button mat-button mat-dialog-close>Cancel</button>
+      <button mat-flat-button color="primary" (click)="onSave()" class="save-btn">Save Record</button>
     </div>
   </div>
 </div>

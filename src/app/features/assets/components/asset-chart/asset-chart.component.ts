@@ -40,7 +40,7 @@ export class AssetChartComponent implements OnInit, OnChanges, OnDestroy {
 
     this.chartInstance = echarts.init(this.chartContainer.nativeElement);
 
-    // 監聽點擊資料點事件
+    // Listen to data point click
     this.chartInstance.on('click', (params: any) => {
       if (params && params.dataIndex !== undefined) {
         const targetRecord = this.sortedRecords[params.dataIndex];
@@ -61,7 +61,7 @@ export class AssetChartComponent implements OnInit, OnChanges, OnDestroy {
   private updateChart(): void {
     if (!this.chartInstance) return;
 
-    // 按日期升序排列
+    // Sort by date ascending
     this.sortedRecords = [...this.data].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     const dates = this.sortedRecords.map(d => d.date);
     const totals = this.sortedRecords.map(d => d.total);
@@ -84,7 +84,7 @@ export class AssetChartComponent implements OnInit, OnChanges, OnDestroy {
 
           let diffContent = '';
           if (dataIndex === 0) {
-            diffContent = `<div style="margin-top: 6px; font-size: 12.5px; color: #888;">📌 起始期記錄 (無前期資料)</div>`;
+            diffContent = `<div style="margin-top: 6px; font-size: 12.5px; color: #888;">📌 Initial record (No previous data)</div>`;
           } else {
             const prevRecord = records[dataIndex - 1];
             const prevTotal = Number(prevRecord.total) || 0;
@@ -99,10 +99,10 @@ export class AssetChartComponent implements OnInit, OnChanges, OnDestroy {
 
             diffContent = `
               <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed #e0e0e0; font-size: 13px;">
-                <span style="color: #666;">前期 (${prevRecord.date}): </span>
+                <span style="color: #666;">Previous (${prevRecord.date}): </span>
                 <span style="color: #444;">NT$ ${prevTotal.toLocaleString()}</span>
                 <br/>
-                <span style="color: #666;">較前期差額: </span>
+                <span style="color: #666;">Change: </span>
                 <strong style="color: ${color}; font-size: 13.5px;">
                   ${arrow} ${sign}NT$ ${diff.toLocaleString()} (${sign}${diffPercent}%)
                 </strong>
@@ -112,12 +112,12 @@ export class AssetChartComponent implements OnInit, OnChanges, OnDestroy {
 
           return `
             <div style="font-family: Roboto, -apple-system, sans-serif; min-width: 190px;">
-              <div style="font-size: 13px; color: #666; margin-bottom: 4px;">📅 日期: <b>${p.name}</b></div>
+              <div style="font-size: 13px; color: #666; margin-bottom: 4px;">📅 Date: <b>${p.name}</b></div>
               <div style="font-size: 16px; font-weight: bold; color: #1a237e;">
-                總資產: NT$ ${currentTotal.toLocaleString()}
+                Total Net Worth: NT$ ${currentTotal.toLocaleString()}
               </div>
               ${diffContent}
-              <div style="margin-top: 8px; font-size: 11.5px; color: #3f51b5;">👉 點擊此點可跳至下方明細</div>
+              <div style="margin-top: 8px; font-size: 11.5px; color: #3f51b5;">👉 Click to view details below</div>
             </div>
           `;
         }
@@ -136,7 +136,7 @@ export class AssetChartComponent implements OnInit, OnChanges, OnDestroy {
       },
       yAxis: {
         type: 'value',
-        scale: true, // 脫離 0 基準線，自動聚焦在資料的波動範圍
+        scale: true,
         min: (value: { min: number; max: number }) => {
           const span = value.max - value.min;
           const padding = span > 0 ? span * 0.15 : (value.min * 0.05 || 10000);
@@ -161,7 +161,7 @@ export class AssetChartComponent implements OnInit, OnChanges, OnDestroy {
       },
       series: [
         {
-          name: '總資產',
+          name: 'Total Net Worth',
           type: 'line',
           smooth: true,
           data: totals,

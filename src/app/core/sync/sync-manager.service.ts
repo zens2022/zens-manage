@@ -28,14 +28,14 @@ export class SyncManagerService {
   private syncTrigger$ = new Subject<void>();
 
   constructor() {
-    // 監聽防抖自動上傳
+    // Listen for debounced auto-upload
     this.syncTrigger$.pipe(
       debounceTime(environment.syncDebounceMs || 3500)
     ).subscribe(() => {
       this.performCloudUpload();
     });
 
-    // 監聽網路連線恢復
+    // Listen for network status recovery
     effect(() => {
       const isOnline = this.networkService.isOnline();
       if (isOnline && this.pendingChanges) {
@@ -45,7 +45,7 @@ export class SyncManagerService {
       }
     });
 
-    // 監聽登入狀態改變
+    // Listen for auth state changes
     effect(() => {
       const isLoggedIn = this.authService.isLoggedIn();
       if (isLoggedIn) {
@@ -58,7 +58,7 @@ export class SyncManagerService {
   }
 
   /**
-   * 當本地資料發生變更時，由外部呼叫此方法排程同步
+   * Called when local data changes to schedule a sync
    */
   notifyLocalChange(): void {
     this.pendingChanges = true;
@@ -71,14 +71,14 @@ export class SyncManagerService {
   }
 
   /**
-   * 啟動初始化同步：比對雲端與本機時間戳與筆數
+   * Initial cloud sync on startup
    */
   async initializeCloudSync(): Promise<void> {
     await this.syncWithCloud(false);
   }
 
   /**
-   * 智慧雙向同步：保護雲端資料不被空白本機洗掉
+   * Smart bidirectional sync: protects cloud data from being wiped by empty local state
    */
   async syncWithCloud(isManual: boolean = false): Promise<void> {
     const token = this.authService.accessToken();
@@ -87,7 +87,7 @@ export class SyncManagerService {
     if (!this.networkService.isOnline()) {
       this.syncStatus.set('offline');
       if (isManual) {
-        this.snackBar.open('目前處於離線狀態，無法同步', '確定', { duration: 3000 });
+        this.snackBar.open('Currently offline. Cannot sync.', 'OK', { duration: 3000 });
       }
       return;
     }
@@ -108,56 +108,56 @@ export class SyncManagerService {
         const localTime = localData.lastModified ? new Date(localData.lastModified).getTime() : 0;
         const remoteTime = remoteData.lastModified ? new Date(remoteData.lastModified).getTime() : 0;
 
-        // 規則 1：本機為空但雲端有資料 -> 絕對優先從雲端下載（防護洗白）
+        // Rule 1: Local is empty but cloud has data -> Download from cloud (prevent wipe)
         if (localCount === 0 && remoteCount > 0) {
-          console.log(`[Sync] 本機為空，從雲端下載 ${remoteCount} 筆資料`);
+          console.log(`[Sync] Local is empty, downloading ${remoteCount} records from cloud`);
           this.localService.saveData(remoteData, false);
-          this.snackBar.open(`已從 Google Drive 同步下載 ${remoteCount} 筆資產記錄`, '確定', { duration: 3500 });
+          this.snackBar.open(`Downloaded ${remoteCount} asset records from Google Drive`, 'OK', { duration: 3500 });
         }
-        // 規則 2：本機有資料但雲端為空 -> 本機推至雲端
+        // Rule 2: Local has data but cloud is empty -> Push local to cloud
         else if (localCount > 0 && remoteCount === 0) {
-          console.log('[Sync] 雲端為空，將本機資料備份至雲端');
+          console.log('[Sync] Cloud is empty, backing up local data to cloud');
           await this.driveService.updateFile(token, file.id, localData);
           if (isManual) {
-            this.snackBar.open(`已備份 ${localCount} 筆記錄至 Google Drive`, '確定', { duration: 3000 });
+            this.snackBar.open(`Backed up ${localCount} records to Google Drive`, 'OK', { duration: 3000 });
           }
         }
-        // 規則 3：兩邊都有資料 -> 依據最後修改時間比較
+        // Rule 3: Both have data -> Compare last modified timestamp
         else if (localCount > 0 && remoteCount > 0) {
           if (remoteTime > localTime) {
-            console.log('[Sync] 雲端資料較新，更新本機');
+            console.log('[Sync] Cloud data is newer, updating local');
             this.localService.saveData(remoteData, false);
-            this.snackBar.open(`已從雲端更新最新資產記錄 (${remoteCount} 筆)`, '確定', { duration: 3500 });
+            this.snackBar.open(`Updated latest asset records from cloud (${remoteCount} records)`, 'OK', { duration: 3500 });
           } else if (localTime > remoteTime) {
-            console.log('[Sync] 本機資料較新，更新雲端');
+            console.log('[Sync] Local data is newer, updating cloud');
             await this.driveService.updateFile(token, file.id, localData);
             if (isManual) {
-              this.snackBar.open(`已同步更新 ${localCount} 筆記錄至 Google Drive`, '確定', { duration: 3000 });
+              this.snackBar.open(`Synchronized ${localCount} records to Google Drive`, 'OK', { duration: 3000 });
             }
           } else {
-            console.log('[Sync] 本機與雲端資料一致');
+            console.log('[Sync] Local and cloud data are identical');
             if (isManual) {
-              this.snackBar.open('本機與 Google Drive 資料已是一致最新狀態', '確定', { duration: 2500 });
+              this.snackBar.open('Local and Google Drive data are already up to date', 'OK', { duration: 2500 });
             }
           }
         } else {
-          // 兩邊皆為空
+          // Both are empty
           if (isManual) {
-            this.snackBar.open('本機與雲端目前皆無資產資料', '確定', { duration: 2500 });
+            this.snackBar.open('No asset data currently found on local or cloud', 'OK', { duration: 2500 });
           }
         }
       } else {
-        // 雲端尚無檔案
+        // No remote file yet
         if (localCount > 0) {
-          console.log('[Sync] 在 Google Drive 建立初始備份檔案');
+          console.log('[Sync] Creating initial backup file on Google Drive');
           const created = await this.driveService.createFile(token, environment.driveFileName, localData);
           this.driveFileId = created.id;
           if (isManual) {
-            this.snackBar.open(`已在 Google Drive 建立備份 (${localCount} 筆記錄)`, '確定', { duration: 3000 });
+            this.snackBar.open(`Created backup on Google Drive (${localCount} records)`, 'OK', { duration: 3000 });
           }
         } else {
           if (isManual) {
-            this.snackBar.open('目前尚無資產資料可同步', '確定', { duration: 2500 });
+            this.snackBar.open('No asset data available to sync', 'OK', { duration: 2500 });
           }
         }
       }
@@ -171,7 +171,7 @@ export class SyncManagerService {
   }
 
   /**
-   * 執行背景上傳覆寫 Drive (包含防空白洗白防護)
+   * Background upload to Drive (includes anti-wipe guard)
    */
   private async performCloudUpload(): Promise<void> {
     const token = this.authService.accessToken();
@@ -197,11 +197,11 @@ export class SyncManagerService {
       }
 
       if (this.driveFileId) {
-        // 安全防線：如果本地是 0 筆，禁止直接盲目覆寫已有資料的雲端檔案
+        // Safety guard: if local has 0 records, do not blind-overwrite non-empty remote file
         if (localCount === 0) {
           const remoteData = await this.driveService.downloadFile(token, this.driveFileId);
           if (remoteData.assets && remoteData.assets.length > 0) {
-            console.warn('[Sync Security] 拒絕用空本機資料洗掉雲端備份，自動下載雲端資料');
+            console.warn('[Sync Security] Refusing to overwrite cloud data with empty local data, downloading cloud data');
             this.localService.saveData(remoteData, false);
             this.pendingChanges = false;
             this.syncStatus.set('synced');
@@ -224,7 +224,7 @@ export class SyncManagerService {
   }
 
   /**
-   * 使用者點擊強制同步按鈕：執行完整雙向智能同步
+   * Manual force sync triggered by user
    */
   async forceSync(): Promise<void> {
     if (!this.authService.isLoggedIn()) {
@@ -237,10 +237,10 @@ export class SyncManagerService {
   private handleSyncError(err: any): void {
     console.error('[Sync Error]', err);
     if (err?.message === 'UNAUTHORIZED') {
-      this.errorMessage.set('Google 授權已過期，請重新登入');
+      this.errorMessage.set('Google authorization has expired. Please log in again.');
       this.authService.logout();
     } else {
-      this.errorMessage.set('雲端同步失敗，請檢查網路連線或稍後再試');
+      this.errorMessage.set('Cloud sync failed. Please check your network connection or try again later.');
     }
     this.syncStatus.set('error');
   }

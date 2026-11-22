@@ -95,13 +95,13 @@ export class AssetDialogComponent implements OnInit {
   onSave(): void {
     this.errorMessage = '';
     if (!this.date) {
-      this.errorMessage = '請填寫記錄日期';
+      this.errorMessage = 'Please specify a record date';
       return;
     }
 
     const invalidItem = this.items.find(i => !i.name || i.name.trim() === '');
     if (invalidItem) {
-      this.errorMessage = '所有項目皆須填寫名稱';
+      this.errorMessage = 'All items must have a name';
       return;
     }
 

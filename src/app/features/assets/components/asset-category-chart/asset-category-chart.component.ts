@@ -103,7 +103,7 @@ export class AssetCategoryChartComponent implements OnInit, OnChanges, OnDestroy
       };
     });
 
-    // 檢查是否有 none 或 other 資料，若全都為 0 則圖例預設可取消勾選或保留
+    // Check if none or other has values
     const hasNone = noneValues.some(v => v > 0);
     const hasOther = otherValues.some(v => v > 0);
 
@@ -122,14 +122,14 @@ export class AssetCategoryChartComponent implements OnInit, OnChanges, OnDestroy
           const info = categoryBreakdowns[idx];
 
           const rows = [
-            { name: '現金', value: info.cash, pct: info.cashPct, color: '#1976d2' },
-            { name: '投資', value: info.investment, pct: info.investmentPct, color: '#388e3c' },
-            { name: '其他', value: info.other, pct: info.otherPct, color: '#f57c00' },
-            { name: '未分類', value: info.none, pct: info.nonePct, color: '#757575' }
+            { name: 'Cash', value: info.cash, pct: info.cashPct, color: '#1976d2' },
+            { name: 'Investment', value: info.investment, pct: info.investmentPct, color: '#388e3c' },
+            { name: 'Other', value: info.other, pct: info.otherPct, color: '#f57c00' },
+            { name: 'Uncategorized', value: info.none, pct: info.nonePct, color: '#757575' }
           ];
 
           const rowsHtml = rows
-            .filter(r => r.value > 0 || r.name === '現金' || r.name === '投資')
+            .filter(r => r.value > 0 || r.name === 'Cash' || r.name === 'Investment')
             .map(r => `
               <div style="display: flex; justify-content: space-between; align-items: center; margin: 4px 0; gap: 16px;">
                 <span style="display: flex; align-items: center; gap: 6px; color: #444;">
@@ -144,20 +144,20 @@ export class AssetCategoryChartComponent implements OnInit, OnChanges, OnDestroy
 
           return `
             <div style="font-family: Roboto, -apple-system, sans-serif; min-width: 220px;">
-              <div style="font-size: 13px; color: #666; margin-bottom: 4px;">📅 日期: <b>${dateStr}</b></div>
+              <div style="font-size: 13px; color: #666; margin-bottom: 4px;">📅 Date: <b>${dateStr}</b></div>
               <div style="font-size: 15px; font-weight: bold; color: #1a237e; margin-bottom: 6px;">
-                總資產: NT$ ${info.total.toLocaleString()}
+                Total Net Worth: NT$ ${info.total.toLocaleString()}
               </div>
               <div style="border-top: 1px dashed #e0e0e0; padding-top: 6px; font-size: 13px;">
                 ${rowsHtml}
               </div>
-              <div style="margin-top: 8px; font-size: 11.5px; color: #3f51b5;">👉 點擊此點可跳至下方明細</div>
+              <div style="margin-top: 8px; font-size: 11.5px; color: #3f51b5;">👉 Click to view details below</div>
             </div>
           `;
         }
       },
       legend: {
-        data: ['現金', '投資', '其他', '未分類'],
+        data: ['Cash', 'Investment', 'Other', 'Uncategorized'],
         top: '2%',
         right: '2%',
         icon: 'circle',
@@ -165,10 +165,10 @@ export class AssetCategoryChartComponent implements OnInit, OnChanges, OnDestroy
         itemHeight: 8,
         textStyle: { fontSize: 12, color: '#555' },
         selected: {
-          '現金': true,
-          '投資': true,
-          '其他': hasOther,
-          '未分類': hasNone
+          'Cash': true,
+          'Investment': true,
+          'Other': hasOther,
+          'Uncategorized': hasNone
         }
       },
       grid: {
@@ -197,7 +197,7 @@ export class AssetCategoryChartComponent implements OnInit, OnChanges, OnDestroy
       },
       series: [
         {
-          name: '現金',
+          name: 'Cash',
           type: 'line',
           smooth: true,
           data: cashValues,
@@ -207,7 +207,7 @@ export class AssetCategoryChartComponent implements OnInit, OnChanges, OnDestroy
           itemStyle: { color: '#1976d2' }
         },
         {
-          name: '投資',
+          name: 'Investment',
           type: 'line',
           smooth: true,
           data: investmentValues,
@@ -217,7 +217,7 @@ export class AssetCategoryChartComponent implements OnInit, OnChanges, OnDestroy
           itemStyle: { color: '#388e3c' }
         },
         {
-          name: '其他',
+          name: 'Other',
           type: 'line',
           smooth: true,
           data: otherValues,
@@ -227,7 +227,7 @@ export class AssetCategoryChartComponent implements OnInit, OnChanges, OnDestroy
           itemStyle: { color: '#f57c00' }
         },
         {
-          name: '未分類',
+          name: 'Uncategorized',
           type: 'line',
           smooth: true,
           data: noneValues,

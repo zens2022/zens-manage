@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-  # 允許在 GitHub 頁面手動點擊觸發 (Actions -> Run workflow)
+  # Allow manual trigger in GitHub Actions UI (Actions -> Run workflow)
   workflow_dispatch:
 
 permissions:
@@ -17,7 +17,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # 1. 建置階段
+  # 1. Build stage
   build:
     runs-on: ubuntu-latest
     steps:
@@ -44,7 +44,7 @@ jobs:
         with:
           path: './dist/zens-manage/browser'
 
-  # 2. 部署階段 (獨立 Job，確保 artifact 完全確認上傳後再部署)
+  # 2. Deploy stage (isolated job to ensure artifact upload is confirmed)
   deploy:
     environment:
       name: github-pages
