@@ -29,8 +29,12 @@
 * 🔄 **智慧雙向同步與防洗白保護**：
   * 當本地為空時，自動從 Google Drive 下載最新資產還原，防止意外覆寫洗空雲端資料。
   * 支援 3.5 秒自動防抖背景同步與右上角手動強制同步。
-* 📈 **互動式趨勢分析圖 (ECharts)**：視覺化呈現資產成長曲線，支援點擊圖表節點直接平滑滾動跳轉至下方明細並展開播放高亮動畫。
-* 📑 **歷史明細一鍵帶入**：新增資產記錄時可直接一鍵帶入上次項目名稱，大幅節省記帳時間。
+* 📈 **雙圖表互動趨勢分析 (Dual ECharts)**：
+  * **總資產趨勢圖**：視覺化呈現資產長期成長曲線，計算與前期金額差額及增減百分比。
+  * **資產類型分佈走勢圖**：即時分析「現金、投資、其他、未分類」等各類型資產隨時間演進的累積金額與佔比變化，支援圖例切換篩選。
+  * 點擊任一圖表節點均可平滑滾動跳轉至下方明細並播放高亮動畫。
+* 🏷️ **資產類型分類與標籤管理**：每筆明細支援「現金、投資、其他、未分類」分類，列表展開時以彩色徽章 (Badge) 直觀呈現，向後相容過往舊紀錄。
+* 📑 **歷史明細一鍵帶入**：新增資產記錄時可直接一鍵帶入上次項目名稱與資產類型（金額歸零），大幅節省記帳時間。
 * 📡 **離線韌性 (Offline Capability)**：自動偵測連線狀態，離線時資料妥善加密保存在本機，恢復網路時自動補傳同步。
 
 ---
@@ -128,7 +132,7 @@ npm run build -- --base-href /zens-manage/
 本專案已配置完整 GitHub Actions 工作流程 ([.github/workflows/deploy.yml](.github/workflows/deploy.yml))：
 1. 在 GitHub 倉庫點選 **Settings** > **Pages**。
 2. 將 **Build and deployment > Source** 設定為 **`GitHub Actions`**。
-3. 只要 Push 代碼至 `main` 或 `migration` 分支，即會自動觸發打包建置，並安全發布至 GitHub Pages！
+3. 只要 Push 代碼至 `main` 分支，即會自動觸發打包建置，並安全發布至 GitHub Pages！
 
 ### 2. 本地 Docker 容器化部署
 專案根目錄內建 `docker/` 目錄，內含 Multi-stage Dockerfile 與 Nginx 最佳化配置：
@@ -159,10 +163,11 @@ zens-manage/
 │   │   │   └── sync/               # 雙向智慧同步與防洗白協調器 (SyncManager)
 │   │   ├── features/assets/        # 資產業務功能模組
 │   │   │   ├── components/         # 獨立拆分之 Presentational Components
-│   │   │   │   ├── asset-chart/    # ECharts 資產趨勢圖表元件
-│   │   │   │   ├── asset-dialog/   # 新增/編輯資產對話框
-│   │   │   │   ├── asset-table/    # 資產列表表格、分頁與展開明細元件
-│   │   │   │   └── auth-lock/      # 未登入安全鎖定與引導登入卡片
+│   │   │   │   ├── asset-chart/          # ECharts 總資產趨勢圖表元件
+│   │   │   │   ├── asset-category-chart/ # ECharts 資產類型分佈走勢圖表元件
+│   │   │   │   ├── asset-dialog/         # 新增/編輯資產對話框 (支援類型分類選擇)
+│   │   │   │   ├── asset-table/          # 資產列表表格、分頁與展開明細元件 (含類型標籤 Badge)
+│   │   │   │   └── auth-lock/            # 未登入安全鎖定與引導登入卡片
 │   │   │   ├── asset-page.component.ts/html/scss  # 資產主頁面容器 (Smart Container)
 │   │   ├── models/                 # 全域資料模型定義 (TypeScript Interfaces)
 │   │   ├── shared/components/      # 通用元件 (Header 導覽列與同步狀態燈)
