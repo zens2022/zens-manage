@@ -32,8 +32,11 @@
         </mat-card-content>
       </mat-card>
     } @else {
-      <!-- 資產趨勢圖表 -->
-      <app-asset-chart [data]="allAssets()" (pointClick)="onChartPointClick($event)"></app-asset-chart>
+      <!-- 資產趨勢與類型雙圖表 -->
+      <div class="charts-grid">
+        <app-asset-chart [data]="allAssets()" (pointClick)="onChartPointClick($event)"></app-asset-chart>
+        <app-asset-category-chart [data]="allAssets()" (pointClick)="onChartPointClick($event)"></app-asset-category-chart>
+      </div>
 
       <!-- 資產明細表格 -->
       <app-asset-table

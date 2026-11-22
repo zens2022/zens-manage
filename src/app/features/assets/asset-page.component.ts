@@ -11,6 +11,7 @@ import { SyncManagerService } from '../../core/sync/sync-manager.service';
 import { AssetRecord } from '../../models/asset.model';
 import { AuthLockComponent } from './components/auth-lock/auth-lock.component';
 import { AssetChartComponent } from './components/asset-chart/asset-chart.component';
+import { AssetCategoryChartComponent } from './components/asset-category-chart/asset-category-chart.component';
 import { AssetTableComponent } from './components/asset-table/asset-table.component';
 import { AssetDialogComponent } from './components/asset-dialog/asset-dialog.component';
 
@@ -26,6 +27,7 @@ import { AssetDialogComponent } from './components/asset-dialog/asset-dialog.com
     MatSnackBarModule,
     AuthLockComponent,
     AssetChartComponent,
+    AssetCategoryChartComponent,
     AssetTableComponent
   ],
   templateUrl: './asset-page.component.html',
