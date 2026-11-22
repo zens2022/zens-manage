@@ -1,7 +1,15 @@
 .page-container {
-  max-width: 1140px;
+  max-width: 1600px;
   margin: 0 auto;
-  padding: 24px 16px 48px;
+  padding: 24px 24px 48px;
+
+  @media (min-width: 1920px) {
+    max-width: 1760px;
+  }
+
+  @media (max-width: 768px) {
+    padding: 16px 12px 32px;
+  }
 }
 
 .action-bar {
