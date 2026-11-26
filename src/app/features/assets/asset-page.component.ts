@@ -69,11 +69,13 @@ export class AssetPageComponent implements OnInit {
   }
 
   openCreateDialog(): void {
+    const assets = this.localService.getAssets();
+    const lastRecord = assets.length > 0 ? assets[0] : undefined;
     const lastItems = this.localService.getLastItems();
     const dialogRef = this.dialog.open(AssetDialogComponent, {
-      width: '740px',
+      width: lastRecord ? '840px' : '740px',
       maxWidth: '95vw',
-      data: { lastItems }
+      data: { lastItems, lastRecordDate: lastRecord?.date }
     });
 
     dialogRef.afterClosed().subscribe(result => {

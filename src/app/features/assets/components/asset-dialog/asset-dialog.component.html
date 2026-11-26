@@ -53,6 +53,11 @@
           <th class="th-index">#</th>
           <th class="th-category">Category</th>
           <th class="th-name">Item Name</th>
+          @if (showPreviousColumn) {
+            <th class="th-prev" [matTooltip]="'Previous record: ' + data.lastRecordDate">
+              Prev ({{ data.lastRecordDate }})
+            </th>
+          }
           <th class="th-value">Amount (NT$)</th>
           <th class="th-action">Actions</th>
         </tr>
@@ -78,6 +83,21 @@
                 required
               />
             </td>
+            @if (showPreviousColumn) {
+              <td class="td-prev">
+                @if (item.prevValue !== undefined) {
+                  <button
+                    type="button"
+                    class="prev-value-btn"
+                    (click)="applyPrevValue(item)"
+                    matTooltip="Click to fill with previous amount">
+                    NT$ {{ item.prevValue.toLocaleString() }}
+                  </button>
+                } @else {
+                  <span class="prev-empty">—</span>
+                }
+              </td>
+            }
             <td class="td-value">
               <div class="currency-input-wrap">
                 <span class="currency-prefix">NT$</span>

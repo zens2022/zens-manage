@@ -140,7 +140,7 @@ export class LocalStorageService {
       return sorted[0].items.map(i => ({
         id: 'item_' + Math.random().toString(36).substring(2, 9),
         name: i.name,
-        value: 0,
+        value: i.value,
         category: i.category || 'none'
       }));
     }

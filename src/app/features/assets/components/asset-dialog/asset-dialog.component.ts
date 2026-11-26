@@ -10,6 +10,11 @@ import { AssetItem, AssetRecord } from '../../../../models/asset.model';
 export interface AssetDialogData {
   editRecord?: AssetRecord;
   lastItems?: AssetItem[];
+  lastRecordDate?: string;
+}
+
+export interface DialogAssetItem extends AssetItem {
+  prevValue?: number;
 }
 
 @Component({
@@ -29,8 +34,12 @@ export interface AssetDialogData {
 export class AssetDialogComponent implements OnInit {
   isEdit = false;
   date: string = new Date().toISOString().slice(0, 10);
-  items: AssetItem[] = [];
+  items: DialogAssetItem[] = [];
   errorMessage = '';
+
+  get showPreviousColumn(): boolean {
+    return !this.isEdit && !!this.data?.lastRecordDate;
+  }
 
   constructor(
     public dialogRef: MatDialogRef<AssetDialogComponent>,
@@ -62,8 +71,15 @@ export class AssetDialogComponent implements OnInit {
         id: 'item_' + Math.random().toString(36).substring(2, 9),
         name: it.name,
         value: 0,
-        category: it.category || 'none'
+        category: it.category || 'none',
+        prevValue: it.value
       }));
+    }
+  }
+
+  applyPrevValue(item: DialogAssetItem): void {
+    if (item.prevValue !== undefined) {
+      item.value = item.prevValue;
     }
   }
 
@@ -107,7 +123,7 @@ export class AssetDialogComponent implements OnInit {
 
     this.dialogRef.close({
       date: this.date,
-      items: this.items
+      items: this.items.map(({ prevValue, ...rest }) => rest)
     });
   }
 }
