@@ -38,13 +38,13 @@
         <app-asset-category-chart [data]="allAssets()" (pointClick)="onChartPointClick($event)"></app-asset-category-chart>
       </div>
 
-      <!-- Asset table -->
-      <app-asset-table
-        #assetTable
+      <!-- Asset timeline -->
+      <app-asset-timeline
+        #assetTimeline
         [assets]="allAssets()"
         (edit)="openEditDialog($event)"
         (delete)="confirmDelete($event)">
-      </app-asset-table>
+      </app-asset-timeline>
     }
   }
 </div>

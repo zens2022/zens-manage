@@ -1,0 +1,211 @@
+<mat-card class="timeline-root-card">
+  <!-- Top Toolbar -->
+  <div class="timeline-toolbar">
+    <div class="toolbar-title-section">
+      <div class="toolbar-title-row">
+        <mat-icon class="title-icon">timeline</mat-icon>
+        <h2 class="toolbar-title">Asset Timeline</h2>
+        <span class="count-badge">{{ assets.length }} Snapshot{{ assets.length > 1 ? 's' : '' }}</span>
+      </div>
+      <p class="toolbar-subtitle">Track your net worth progression and asset allocations across each recorded checkpoint</p>
+    </div>
+
+    <div class="toolbar-actions">
+      <button mat-stroked-button (click)="toggleSortDirection()" class="tool-btn">
+        <mat-icon>{{ sortDirection === 'desc' ? 'arrow_downward' : 'arrow_upward' }}</mat-icon>
+        {{ sortDirection === 'desc' ? 'Newest First' : 'Oldest First' }}
+      </button>
+
+      <button mat-stroked-button (click)="toggleExpandAll()" class="tool-btn">
+        <mat-icon>{{ areAllExpanded() ? 'unfold_less' : 'unfold_more' }}</mat-icon>
+        {{ areAllExpanded() ? 'Collapse All' : 'Expand All' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Timeline Flow Container -->
+  <div class="timeline-flow">
+    @for (entry of pagedEntries(); track entry.record.id; let isFirst = $first; let isLast = $last) {
+      <div
+        class="timeline-item"
+        [id]="'timeline-node-' + entry.record.id"
+        [class.is-first]="isFirst"
+        [class.is-last]="isLast"
+        [class.highlight-flash]="highlightedId === entry.record.id">
+
+        <!-- Left Date Rail (Desktop) -->
+        <div class="timeline-date-rail">
+          <span class="rail-date">{{ entry.record.date }}</span>
+          @if (entry.isLatest) {
+            <span class="status-chip">LATEST</span>
+          }
+        </div>
+
+        <!-- Continuous Vertical Spine & Node -->
+        <div class="timeline-axis">
+          <div class="axis-line axis-line-top"></div>
+          <div class="axis-marker" [class.latest]="entry.isLatest">
+            <mat-icon>{{ entry.isLatest ? 'stars' : 'calendar_today' }}</mat-icon>
+          </div>
+          <div class="axis-line axis-line-bottom"></div>
+        </div>
+
+        <!-- Right Timeline Card -->
+        <div class="timeline-card" [class.expanded]="isExpanded(entry.record.id)">
+          <!-- Card Header: Symmetrical Grid -->
+          <div class="timeline-header" (click)="toggleExpand(entry.record.id)">
+            <!-- Mobile-only Date Row -->
+            <div class="mobile-date-row">
+              <span class="rail-date">{{ entry.record.date }}</span>
+              @if (entry.isLatest) {
+                <span class="status-chip">LATEST</span>
+              }
+            </div>
+
+            <!-- Col 1: Net Worth -->
+            <div class="metric-col net-worth-col">
+              <span class="col-label">Net Worth</span>
+              <span class="net-worth-val">NT$ {{ entry.record.total.toLocaleString() }}</span>
+            </div>
+
+            <!-- Col 2: Change vs Previous -->
+            <div class="metric-col delta-col">
+              <span class="col-label">Change</span>
+              @if (!entry.change.isInitial) {
+                <span
+                  class="delta-chip"
+                  [class.positive]="entry.change.isIncrease"
+                  [class.negative]="!entry.change.isIncrease"
+                  [matTooltip]="entry.change.isIncrease ? 'Increased vs previous record' : 'Decreased vs previous record'">
+                  <mat-icon class="delta-icon">
+                    {{ entry.change.isIncrease ? 'trending_up' : 'trending_down' }}
+                  </mat-icon>
+                  <span>
+                    NT$ {{ entry.change.diff > 0 ? '+' : '' }}{{ entry.change.diff.toLocaleString() }}
+                    ({{ entry.change.diff > 0 ? '+' : '' }}{{ entry.change.percent.toFixed(1) }}%)
+                  </span>
+                </span>
+              } @else {
+                <span class="delta-chip initial" matTooltip="Baseline initial checkpoint">
+                  <mat-icon class="delta-icon">flag</mat-icon>
+                  <span>Initial Record</span>
+                </span>
+              }
+            </div>
+
+            <!-- Col 3: Fixed-Slot Category Breakdown -->
+            <div
+              class="categories-grid"
+              [style.grid-template-columns]="'repeat(' + activeCategories.length + ', minmax(0, 1fr))'">
+              @for (cat of activeCategories; track cat.id) {
+                <div class="metric-col cat-col">
+                  <span class="col-label">
+                    <span class="cat-dot" [style.background-color]="cat.color"></span>
+                    {{ cat.label }}
+                  </span>
+                  @if (entry.categoryTotals[cat.id] > 0) {
+                    <span class="cat-amount">NT$ {{ entry.categoryTotals[cat.id].toLocaleString() }}</span>
+                  } @else {
+                    <span class="cat-empty">—</span>
+                  }
+                </div>
+              }
+            </div>
+
+            <!-- Col 4: Actions -->
+            <div class="header-actions" (click)="$event.stopPropagation()">
+              <button
+                mat-icon-button
+                color="primary"
+                (click)="edit.emit(entry.record)"
+                matTooltip="Edit record">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                color="warn"
+                (click)="delete.emit(entry.record)"
+                matTooltip="Delete record">
+                <mat-icon>delete</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                class="expand-btn"
+                (click)="toggleExpand(entry.record.id, $event)"
+                [matTooltip]="isExpanded(entry.record.id) ? 'Collapse breakdown' : 'Expand breakdown'">
+                <mat-icon class="expand-icon" [class.rotated]="isExpanded(entry.record.id)">
+                  keyboard_arrow_down
+                </mat-icon>
+              </button>
+            </div>
+          </div>
+
+          <!-- Expandable Breakdown Details -->
+          <div class="timeline-body-wrapper" [class.collapsed]="!isExpanded(entry.record.id)">
+            <div class="timeline-body">
+              <div class="breakdown-header">
+                <span class="breakdown-title">
+                  <mat-icon class="breakdown-icon">view_list</mat-icon>
+                  Allocation Details ({{ entry.record.items.length }} item{{ entry.record.items.length > 1 ? 's' : '' }})
+                </span>
+              </div>
+
+              <div class="items-table-container">
+                <table class="items-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 130px;">Category</th>
+                      <th>Item Name</th>
+                      <th style="width: 200px;">Share of Total</th>
+                      <th style="text-align: right; width: 160px;">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (item of entry.record.items; track item.id) {
+                      <tr>
+                        <td>
+                          <span class="item-cat-badge" [class]="item.category || 'none'">
+                            {{ getCategoryLabel(item.category) }}
+                          </span>
+                        </td>
+                        <td class="item-name-cell">{{ item.name }}</td>
+                        <td>
+                          <div class="share-cell">
+                            <div class="share-bar-bg">
+                              <div
+                                class="share-bar-fill"
+                                [class]="item.category || 'none'"
+                                [style.width.%]="calculatePercentage(item.value, entry.record.total)">
+                              </div>
+                            </div>
+                            <span class="share-text">
+                              {{ calculatePercentage(item.value, entry.record.total) }}%
+                            </span>
+                          </div>
+                        </td>
+                        <td class="item-value-cell">
+                          NT$ {{ item.value.toLocaleString() }}
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    }
+  </div>
+
+  <!-- Paginator -->
+  <mat-paginator
+    [length]="assets.length"
+    [pageSize]="pageSize"
+    [pageIndex]="pageIndex"
+    [pageSizeOptions]="[5, 10, 20, 50]"
+    (page)="onPageChange($event)"
+    class="timeline-paginator">
+  </mat-paginator>
+</mat-card>

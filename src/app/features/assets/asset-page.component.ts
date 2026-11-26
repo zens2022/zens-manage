@@ -12,7 +12,7 @@ import { AssetRecord } from '../../models/asset.model';
 import { AuthLockComponent } from './components/auth-lock/auth-lock.component';
 import { AssetChartComponent } from './components/asset-chart/asset-chart.component';
 import { AssetCategoryChartComponent } from './components/asset-category-chart/asset-category-chart.component';
-import { AssetTableComponent } from './components/asset-table/asset-table.component';
+import { AssetTimelineComponent } from './components/asset-timeline/asset-timeline.component';
 import { AssetDialogComponent } from './components/asset-dialog/asset-dialog.component';
 
 @Component({
@@ -28,7 +28,7 @@ import { AssetDialogComponent } from './components/asset-dialog/asset-dialog.com
     AuthLockComponent,
     AssetChartComponent,
     AssetCategoryChartComponent,
-    AssetTableComponent
+    AssetTimelineComponent
   ],
   templateUrl: './asset-page.component.html',
   styleUrl: './asset-page.component.scss'
@@ -40,7 +40,7 @@ export class AssetPageComponent implements OnInit {
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
 
-  @ViewChild('assetTable') assetTable?: AssetTableComponent;
+  @ViewChild('assetTimeline') assetTimeline?: AssetTimelineComponent;
 
   allAssets = signal<AssetRecord[]>([]);
 
@@ -62,10 +62,10 @@ export class AssetPageComponent implements OnInit {
   }
 
   /**
-   * When user clicks a data point on chart, scroll and highlight in AssetTable
+   * When user clicks a data point on chart, scroll and highlight in AssetTimeline
    */
   onChartPointClick(record: AssetRecord): void {
-    this.assetTable?.highlightRecord(record);
+    this.assetTimeline?.highlightRecord(record);
   }
 
   openCreateDialog(): void {
