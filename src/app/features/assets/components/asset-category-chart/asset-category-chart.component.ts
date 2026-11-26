@@ -120,38 +120,65 @@ export class AssetCategoryChartComponent implements OnInit, OnChanges, OnDestroy
           const idx = params[0].dataIndex;
           const dateStr = dates[idx];
           const info = categoryBreakdowns[idx];
+          const prevInfo = idx > 0 ? categoryBreakdowns[idx - 1] : null;
 
           const rows = [
-            { name: 'Cash', value: info.cash, pct: info.cashPct, color: '#1976d2' },
-            { name: 'Investment', value: info.investment, pct: info.investmentPct, color: '#388e3c' },
-            { name: 'Other', value: info.other, pct: info.otherPct, color: '#f57c00' },
-            { name: 'Uncategorized', value: info.none, pct: info.nonePct, color: '#757575' }
+            { name: 'Cash', value: info.cash, prevValue: prevInfo?.cash ?? 0, pct: info.cashPct, color: '#1976d2' },
+            { name: 'Investment', value: info.investment, prevValue: prevInfo?.investment ?? 0, pct: info.investmentPct, color: '#388e3c' },
+            { name: 'Other', value: info.other, prevValue: prevInfo?.other ?? 0, pct: info.otherPct, color: '#f57c00' },
+            { name: 'Uncategorized', value: info.none, prevValue: prevInfo?.none ?? 0, pct: info.nonePct, color: '#757575' }
           ];
 
           const rowsHtml = rows
-            .filter(r => r.value > 0 || r.name === 'Cash' || r.name === 'Investment')
-            .map(r => `
-              <div style="display: flex; justify-content: space-between; align-items: center; margin: 4px 0; gap: 16px;">
-                <span style="display: flex; align-items: center; gap: 6px; color: #444;">
-                  <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: ${r.color};"></span>
-                  ${r.name}:
-                </span>
-                <span style="font-weight: 500; color: #111;">
-                  NT$ ${r.value.toLocaleString()} <span style="font-size: 11.5px; color: #666;">(${r.pct}%)</span>
-                </span>
-              </div>
-            `).join('');
+            .filter(r => r.value > 0 || (prevInfo && r.prevValue > 0) || r.name === 'Cash' || r.name === 'Investment')
+            .map(r => {
+              let diffHtml = '';
+              if (prevInfo) {
+                const diff = r.value - r.prevValue;
+                const isPositive = diff > 0;
+                const isZero = diff === 0;
+                const diffColor = isPositive ? '#2e7d32' : isZero ? '#777' : '#c62828';
+                const sign = isPositive ? '+' : '';
+                const arrow = isPositive ? '▲' : isZero ? '—' : '▼';
+                const pctText = r.prevValue !== 0
+                  ? `${sign}${((diff / r.prevValue) * 100).toFixed(2)}%`
+                  : (diff > 0 ? 'New' : '0.00%');
+
+                diffHtml = `
+                  <div style="text-align: right; font-size: 12px; font-weight: 600; color: ${diffColor}; margin-top: 1px;">
+                    ${arrow} NT$ ${sign}${diff.toLocaleString()} (${pctText})
+                  </div>
+                `;
+              }
+
+              return `
+                <div style="margin: 6px 0;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px;">
+                    <span style="display: flex; align-items: center; gap: 6px; color: #444;">
+                      <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: ${r.color};"></span>
+                      ${r.name}:
+                    </span>
+                    <span style="font-weight: 600; color: #111;">
+                      NT$ ${r.value.toLocaleString()} <span style="font-size: 11.5px; font-weight: 400; color: #666;">(${r.pct}%)</span>
+                    </span>
+                  </div>
+                  ${diffHtml}
+                </div>
+              `;
+            }).join('');
+
+          const initialHintHtml = !prevInfo
+            ? `<div style="margin-top: 6px; font-size: 12px; color: #888;">📌 Initial record (No previous data)</div>`
+            : '';
 
           return `
-            <div style="font-family: Roboto, -apple-system, sans-serif; min-width: 220px;">
-              <div style="font-size: 13px; color: #666; margin-bottom: 4px;">📅 Date: <b>${dateStr}</b></div>
-              <div style="font-size: 15px; font-weight: bold; color: #1a237e; margin-bottom: 6px;">
-                Total Net Worth: NT$ ${info.total.toLocaleString()}
-              </div>
-              <div style="border-top: 1px dashed #e0e0e0; padding-top: 6px; font-size: 13px;">
+            <div style="font-family: Roboto, -apple-system, sans-serif; min-width: 240px;">
+              <div style="font-size: 13px; color: #555; margin-bottom: 6px;">📅 Date: <b>${dateStr}</b></div>
+              <div style="border-top: 1px dashed #e0e0e0; padding-top: 4px; font-size: 13px;">
                 ${rowsHtml}
               </div>
-              <div style="margin-top: 8px; font-size: 11.5px; color: #3f51b5;">👉 Click to view details below</div>
+              ${initialHintHtml}
+              <div style="margin-top: 8px; padding-top: 6px; border-top: 1px dashed #e0e0e0; font-size: 11.5px; color: #3f51b5;">👉 Click to view details below</div>
             </div>
           `;
         }
